@@ -2,7 +2,7 @@
 self.addEventListener('install', function(event) {
     console.log('[ServiceWorker] Installed');
     event.waitUntil(
-        caches.open('your-cache-name').then(function(cache) {
+        caches.open('100nen').then(function(cache) {
             return cache.addAll([
                 '/',
                 '/index.html',
