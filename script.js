@@ -1,5 +1,5 @@
 // あなたの Google Apps Script の URL に置き換えてね
-const API_URL = "https://script.google.com/macros/s/AKfycbxKrWzMY3LngPbzjCyL7nRSozy7G2ryF9mQ6tMp4qr-CZsp_rJwcxGHN3FKIc_YgBWi/exec?path=articles";
+const API_URL = "https://raspy-sunset-f70a.100nen-data.workers.dev/?path=articles";
 
 // DOMが読み込まれたら実行
 document.addEventListener("DOMContentLoaded", () => {
