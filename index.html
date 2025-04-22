@@ -1,20 +1,336 @@
-
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>百年前新聞オンライン</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#333333">
-    <link rel="apple-touch-icon" href="icon.png">
+  <base target="_top">
+  <!-- iOS用: ホーム画面追加に必要 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="百年前新聞">
+  <link rel="apple-touch-icon" href="https://pbs.twimg.com/profile_images/875699823361445888/yAH4daId_400x400.jpg">
+
+  <!-- 通常のPWA向け -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#333333">
+
+  <style>
+    #mainContent {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    #tab-buttons {
+      display: none;
+      margin-bottom: 10px;
+      justify-content: center;
+      gap: 10px;
+    }
+    #tab-buttons button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #d8d8d8;
+      cursor: pointer;
+      font-family: 'Georgia', serif;
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    @media (min-width: 800px) {
+      #mainContent {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+      #news, #thumbnailGallery {
+        display: block;
+      }
+      #news {
+        flex: 3;
+      }
+      #thumbnailGallery {
+        flex: 2;
+      }
+    }
+
+    @media (max-width: 799px) {
+      #tab-buttons {
+        display: flex;
+      }
+    }
+
+    #searchInput {
+      padding: 6px;
+      width: 100%;
+      max-width: 300px;
+      font-family: 'Times New Roman', serif;
+      border: 1px solid #aaa;
+    }
+    #filters button {
+      padding: 8px 16px;
+      margin: 4px;
+      border: none;
+      border-radius: 20px;
+      background: #e0e0e0;
+      font-family: 'Georgia', serif;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    #filters button:hover {
+      background: #c0c0c0;
+    }
+    #scrollSentinel {
+      height: 50px;
+    }
+    .article-image {
+      width: 200px;
+      height: auto;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      cursor: zoom-in;
+      transition: opacity 0.2s ease;
+    }
+    .article-image:hover {
+      opacity: 0.8;
+    }
+    #imageModal img {
+      box-shadow: 0 0 20px #fff;
+      border-radius: 8px;
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal img {
+      max-width: 90vw;
+      max-height: 90vh;
+      box-shadow: 0 0 30px #fff;
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+      transform: scale(0.95);
+    }
+    .modal.show img {
+      transform: scale(1);
+    }
+    .hidden {
+      display: none;
+    }
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      color: white;
+      font-size: 32px;
+      border: none;
+      cursor: pointer;
+      z-index: 1001;
+      transition: transform 0.2s ease;
+    }
+    .close-btn:hover {
+      transform: scale(1.2);
+    }
+    #filters button.active {
+      background-color: #ff9800;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    .button {
+      background-color: #85dcb0;
+      color: #2f3640;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .button:hover {
+      background-color: #41b3a3;
+    }
+    .tag-button {
+      margin: 4px;
+      padding: 4px 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #f3f3f3;
+    }
+    .tag-button.active {
+      background-color: #007bff;
+      color: white;
+    }
+    .tag-label {
+      display: inline-block;
+      background-color: #e0e0e0;
+      color: #333;
+      padding: 2px 8px;
+      margin: 4px 4px 0 0;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+    .clickable-tag {
+      cursor: pointer;
+      color: #007aff;
+      margin-right: 4px;
+    }
+
+    .no-results-message {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+      font-style: italic;
+      font-size: 1rem;
+    }
+    .hidden {
+      display: none;
+    }
+
+    body {
+      background-color: #fdf8f0;
+      font-family: 'IBM Plex Sans', 'Courier New', sans-serif;
+      color: #2f3640;
+      line-height: 1.7;
+    }
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      font-family: 'Georgia', serif;
+      color: #222;
+      margin-bottom: 6px;
+    }
+    .body {
+      font-size: 16px;
+      line-height: 1.7;
+      font-family: 'Times New Roman', serif;
+      color: #444;
+    }
+    .genre {
+      background-color: #e1b12c;  /* マスタード */
+      color: white;
+      border-radius: 20px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: bold;
+      display: inline-block;
+      margin-bottom: 0.5rem;
+    }
+    .article {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .article:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+    }
+
+    #thumbnailGallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      margin: 30px 0;
+    }
+    .thumbnail {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .thumbnail:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .thumbnail a {
+      text-decoration: none;
+      color: #e27d60;  /* サーモンピンク */
+      transition: color 0.3s ease;
+    }
+    .thumbnail a:hover {
+      color: #41b3a3;  /* くすみ青緑 */
+    }
+
+  </style>
 </head>
+
 <body>
-  <h1>百年前新聞オンライン</h1>
-  <div id="articles">
-    <!-- 記事がここに表示される -->
+
+  <!-- 簡易ポップアップ -->
+  <div id="ios-tip" style="display:none; position:fixed; bottom:20px; left:0; right:0; padding:10px; background:#fff; text-align:center; box-shadow:0 0 5px #000;">
+    ホーム画面に追加するには、Safariで「共有ボタン → ホーム画面に追加」を選んでね！
   </div>
 
-  <script src="script.js"></script>
+  <div id="search-box" style="margin-bottom: 10px;">
+    <input type="text" id="searchInput" placeholder="キーワードで検索" oninput="applyFilters()" />
+  </div>
+  <div id="filters" style="margin-bottom: 20px;">
+    <button onclick="setGenre('すべて')">すべて</button>
+  </div>
+  <div id="tag-filter">
+    <span>タグで絞り込み:</span>
+    <div id="tag-buttons"></div>
+    <button id="clear-tags">タグをクリア</button>
+  </div>
+  <div id="sortBox" style="margin-bottom: 20px;">
+    <label for="sortSelect">並べ替え：</label>
+    <select id="sortSelect" onchange="applyFilters()">
+      <option value="dateDesc">新しい順</option>
+      <option value="dateAsc">古い順</option>
+      <option value="authorAsc">著者名順（A→Z）</option>
+      <option value="authorDesc">著者名順（Z→A）</option>
+      <option value="titleAsc">タイトル順（A→Z）</option>
+      <option value="titleDesc">タイトル順（Z→A）</option>
+      <option value="hasImage">画像付き優先</option>
+    </select>
+  </div>
+
+  <div id="tab-buttons">
+    <button onclick="switchTab('articles')">📰 記事</button>
+    <button onclick="switchTab('thumbnails')">🖼️ 画像</button>
+  </div>
+
+
+  <div id="mainContent">
+    <div id="noResults" class="no-results-message hidden">
+      該当する記事がありません。
+    </div>
+    <div id="news" class="tab-content">読み込み中...</div>
+    <h2>🖼️ サムネイル一覧</h2>
+    <div id="thumbnailGallery" class="tab-content">
+      <!-- ここに画像を追加 -->
+    </div>
+  </div>
+
+  <!-- モーダル -->
+  <div id="imageModal" class="modal hidden">
+    <button id="closeBtn" class="close-btn">&times;</button>
+    <img id="modalImg" src="" loading="lazy" />
+
+  </div>
+
 </body>
 </html>
