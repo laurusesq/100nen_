@@ -22,7 +22,7 @@ const thumbnailsPerPage = 20;
 let filteredThumbnailArticles = [];
 let isLoading = false;
 
-fetch('/api/articles')
+fetch('https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles')
   .then(response => {
     if (!response.ok) {
       throw new Error('記事データの取得に失敗しました');
