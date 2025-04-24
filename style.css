@@ -71,6 +71,20 @@
 #scrollSentinel {
   height: 50px;
 }
+#scrollToTop {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: none;
+  z-index: 999;
+  font-size: 24px;
+  background: #ff9800;
+  color: white;
+  border-radius: 50%;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
 .article-image {
   width: 200px;
   height: auto;
