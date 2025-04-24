@@ -1,26 +1,42 @@
-self.addEventListener('install', function(event) {
-    event.waitUntil(
-        caches.open('100nen').then(function(cache) {
-            return cache.addAll([
-                '/',
-                '/index.html',
-                '/script.js',
-                '/style.css',
-                '/manifest.json',
-                '/icon.png'
-            ]);
-        })
-    );
+const CACHE_VERSION = Date.now(); // ビルドタイムで変わる
+const CACHE_NAME = `100nen-${CACHE_VERSION}`;
+
+// キャッシュ登録
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/script.js',
+        '/style.css',
+        '/manifest.json',
+        '/icon.png'
+      ]);
+    })
+  );
 });
 
-self.addEventListener('activate', function(event) {
-    event.waitUntil(self.clients.claim());
+// 古いキャッシュ削除
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
 });
 
-self.addEventListener('fetch', function(event) {
-    event.respondWith(
-        caches.match(event.request).then(function(response) {
-            return response || fetch(event.request);
-        })
-    );
+// 通常のフェッチ処理
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
+  );
 });
