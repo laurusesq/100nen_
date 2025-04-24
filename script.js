@@ -1,7 +1,20 @@
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(reg => console.log('Service Worker registered!', reg))
-    .catch(err => console.error('Service Worker registration failed:', err));
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    console.log('Service Worker registered!', reg);
+
+    // 新しいService Workerが見つかったら、即座に更新する処理
+    reg.onupdatefound = () => {
+      const newWorker = reg.installing;
+      newWorker.onstatechange = () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          // 新しいService Workerがインストールされ、コントローラーがいるならページリロード
+          location.reload();
+        }
+      };
+    };
+  }).catch(err => {
+    console.error('Service Worker registration failed:', err);
+  });
 }
 
 const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
