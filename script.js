@@ -590,3 +590,14 @@ document.addEventListener("keydown", function(e) {
     closeModal();
   }
 });
+
+// 表示制御
+window.addEventListener("scroll", () => {
+  const btn = document.getElementById("scrollToTop");
+  btn.style.display = window.scrollY > 300 ? "block" : "none";
+});
+
+// スクロール挙動
+document.getElementById("scrollToTop").addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
