@@ -599,5 +599,5 @@ window.addEventListener("scroll", () => {
 
 // スクロール挙動
 document.getElementById("scrollToTop").addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
 });
