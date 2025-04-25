@@ -1,7 +1,7 @@
 const CACHE_VERSION = Date.now(); // ビルドタイムで変わる
 const CACHE_NAME = `100nen-${CACHE_VERSION}`;
 
-// キャッシュ登録
+// キャッシュの登録
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
