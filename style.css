@@ -85,6 +85,36 @@
   border: none;
   cursor: pointer;
 }
+
+#ios-tip {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  padding: 10px;
+  background: #fff;
+  text-align: center;
+  box-shadow:0 0 5px #000;
+}
+
+#updateNotice {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 9999;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.5s ease;
+}
+
 .article-image {
   width: 200px;
   height: auto;
