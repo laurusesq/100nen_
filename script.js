@@ -2,18 +2,35 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
     console.log('Service Worker registered!', reg);
 
-    // 新しい Service Worker が見つかったら更新
     reg.onupdatefound = () => {
       const newWorker = reg.installing;
       newWorker.onstatechange = () => {
         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          console.log('新しいバージョンがインストールされました。リロードします。');
-          location.reload();
+          showUpdateNotice();
         }
       };
     };
   }).catch(err => {
     console.error('Service Worker registration failed:', err);
+  });
+}
+
+function showUpdateNotice() {
+  const notice = document.getElementById('updateNotice');
+  if (!notice) return;
+
+  notice.style.display = 'block';
+  notice.style.opacity = '1';
+
+  // 5秒でフェードアウト（ただしタップされなければ）
+  setTimeout(() => {
+    notice.style.opacity = '0';
+    setTimeout(() => { notice.style.display = 'none'; }, 500);
+  }, 5000);
+
+  // タップで即リロード
+  notice.addEventListener('click', () => {
+    location.reload();
   });
 }
 
