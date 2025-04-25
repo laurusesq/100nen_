@@ -2,12 +2,12 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
     console.log('Service Worker registered!', reg);
 
-    // 新しいService Workerが見つかったら、即座に更新する処理
+    // 新しい Service Worker が見つかったら更新
     reg.onupdatefound = () => {
       const newWorker = reg.installing;
       newWorker.onstatechange = () => {
         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          // 新しいService Workerがインストールされ、コントローラーがいるならページリロード
+          console.log('新しいバージョンがインストールされました。リロードします。');
           location.reload();
         }
       };
