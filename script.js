@@ -77,7 +77,7 @@ fetch('https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles')
 
     // ✅ ソート（件数の多い順）
     const sortedGenres = Object.entries(genreCounts).sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1]; // 数値で降順
+      if (b[1] !== a[1]) return a[1] - b[1]; // 数値で降順
       return a[0].localeCompare(b[0], 'ja'); // 同点なら五十音順
     });
 
@@ -419,7 +419,7 @@ function extractUniqueTags(articles) {
 
   // 件数の多い順 → 同じなら五十音順（日本語対応）でソート
   return Object.entries(tagCounts).sort((a, b) => {
-    if (b[1] !== a[1]) return b[1] - a[1];
+    if (b[1] !== a[1]) return a[1] - b[1];
     return a[0].localeCompare(b[0], 'ja', { numeric: false, sensitivity: 'base', ignorePunctuation: true});
   });
 /*
