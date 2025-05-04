@@ -267,8 +267,8 @@ function loadMore() {
         <div class="tags">${tags}</div>
       </div>
     `;
-  });
   }
+}
 
   // タグクリックで絞り込み
   const clickableTags = container.querySelectorAll(".clickable-tag"); 
