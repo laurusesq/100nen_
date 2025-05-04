@@ -405,13 +405,11 @@ function highlightActiveButton(activeBtn) {
 function extractUniqueTags(articles) {
   const tagCounts = {};
 
-  const normalizeTag = tag => tag.trim().replace(/\s+/g, '').toLowerCase();
-
   articles.forEach(article => {
     if (!article["タグ"]) return;
     const tags = article["タグ"]
       .split(",")
-      .map(tag => normalizeTag(tag))
+      .map(tag => tag.trim())  // 小文字変換なし
       .filter(tag => tag !== "");
 
     tags.forEach(tag => {
@@ -419,12 +417,10 @@ function extractUniqueTags(articles) {
     });
   });
 
-console.log(Object.entries(tagCounts)) 
-
-  // 件数の多い順にソートして返す
+  // 件数の多い順 → 同じなら五十音順（日本語対応）でソート
   return Object.entries(tagCounts).sort((a, b) => {
-    if (b[1] !== a[1]) return b[1] - a[1]; // 数値で降順
-    return a[0].localeCompare(b[0], 'ja', { numeric: true, sensitivity: 'base' }); // 同点なら五十音順（日本語対応）
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return a[0].localeCompare(b[0], 'ja', { numeric: true, sensitivity: 'base' });
   });
 }
 
