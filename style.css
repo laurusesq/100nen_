@@ -219,11 +219,12 @@
   margin: 4px 4px 0 0;
   border-radius: 12px;
   font-size: 12px;
-  line-height: 5;
+  line-height: 1.7;
   text-decoration: none;
   cursor: pointer;
 }
 .clickable-tag:hover {
+  transform: scale(1.05);
   color: #0057a3;
 }
 .toggle-tags-button {
