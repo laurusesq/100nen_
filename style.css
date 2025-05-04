@@ -251,7 +251,7 @@
   opacity: 0.7;
   transition: opacity 0.2s;
 }
-.wikipedia-link:hover .wiki-icon {
+.wikipedia-link:hover .wikipedia-icon {
   opacity: 1;
 }
 
