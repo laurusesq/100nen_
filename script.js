@@ -245,24 +245,13 @@ function loadMore() {
         // WikipediaのURLを生成
         const wikipediaLink = `https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}`;
         const wikipediaIcon = `<a href="${wikipediaLink}" target="_blank" class="wikipedia-link" title="Wikipediaで${tag}を検索">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Wikipedia%27s_W.svg/128px-Wikipedia%27s_W.svg.png" alt="W" class="wikipedia-icon">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Wikipedia%27s_W.svg/16px-Wikipedia%27s_W.svg.png" alt="W" class="wikipedia-icon">
         </a>`;
       
         return `<span class="tag-label clickable-tag" data-tag="${tag}">#${tag}</span> ${wikipediaIcon}`;
       })
       .join(" ");
   
-    container.innerHTML += tags;
-  });
-/*
-  nextBatch.forEach((article, i) => {
-    const tags = (article["タグ"] || "")
-      .split(",")
-      .map(tag => tag.trim())
-      .filter(tag => tag)
-      .map(tag => `<span class="tag-label clickable-tag" data-tag="${tag}">#${tag}</span>`)
-      .join(" ");
-
     container.innerHTML += `
       <div class="article">
         <div class="genre">${article["ジャンル"]}</div>
@@ -274,7 +263,7 @@ function loadMore() {
       </div>
     `;
   });
-*/
+
   // タグクリックで絞り込み
   const clickableTags = container.querySelectorAll(".clickable-tag"); 
   clickableTags.forEach(tagEl => {
