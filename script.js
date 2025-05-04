@@ -497,7 +497,7 @@ async function buildTagHTML(tags) {
           </a>`
         : "";
 
-      return `<span class="tag-label clickable-tag" data-tag="${tag}">#${tag}</span>${wikipediaIcon}`;
+      return `<span class="clickable-tag" data-tag="${tag}">#${tag}${wikipediaIcon}</span>`;
     })
   );
 
