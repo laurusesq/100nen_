@@ -225,37 +225,21 @@ function applyFilters() {
 }
 
 async function loadMore() {
-  if (!window.filteredArticles || !Array.isArray(window.filteredArticles)) {
-    return;
-  }
-
+  if (!window.filteredArticles || !Array.isArray(window.filteredArticles)) return;
   if (isLoading) return;
   isLoading = true;
 
   const container = document.getElementById("news");
   const end = visibleCount + BATCH_SIZE;
   const nextBatch = window.filteredArticles.slice(visibleCount, end);
-  
+
   for (const article of nextBatch) {
     const rawTags = (article["タグ"] || "")
       .split(",")
       .map(tag => tag.trim())
       .filter(tag => tag);
-  
-    const tagHTMLParts = await Promise.all(
-      rawTags.map(async (tag) => {
-        const exists = await checkWikipediaExistence(tag);
-        const wikiIcon = exists
-          ? `<a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで見る">
-               <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia">
-             </a>`
-          : "";
-  
-        return `<span class="tag-label clickable-tag" data-tag="${tag}">#${tag}</span>${wikiIcon}`;
-      })
-    );
-  
-    const tags = tagHTMLParts.join(" ");
+
+    const tags = await buildTagHTML(rawTags);
 
     container.innerHTML += `
       <div class="article">
@@ -269,6 +253,7 @@ async function loadMore() {
     `;
   }
 }
+
 
   // タグクリックで絞り込み
   const clickableTags = container.querySelectorAll(".clickable-tag"); 
@@ -490,6 +475,7 @@ function renderTagButtons(tagsWithCounts, showAll = false) {
 
 async function checkWikipediaExistence(title) {
 return true;
+/*
   try {
     const apiUrl = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&titles=${encodeURIComponent(title)}&format=json`;
     const response = await fetch(apiUrl);
@@ -500,6 +486,7 @@ return true;
     console.error("Wikipediaチェック失敗:", title, e);
     return false;
   }
+*/
 }
 
 async function buildTagHTML(tags) {
