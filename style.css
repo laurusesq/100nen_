@@ -311,7 +311,9 @@ body {
   box-shadow: 0 8px 16px rgba(0,0,0,0.05);
   padding: 1.5rem;
   margin-bottom: 2rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+/*  transition: transform 0.3s ease, box-shadow 0.3s ease;*/
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+
 }
 /*
 .article:hover {
@@ -319,11 +321,17 @@ body {
   box-shadow: 0 12px 20px rgba(0,0,0,0.08);
 }
 */
+
+.article:hover {
+  filter: brightness(1.02);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.05);
+}
+/*
 .article:hover {
   background-color: #fafafa;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
 }
-
+*/
 #thumbnailGallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
