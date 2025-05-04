@@ -222,6 +222,14 @@
   color: #007aff;
   margin-right: 4px;
 }
+.toggle-tags-button {
+  margin-top: 10px;
+  display: block;
+  background: #eee;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
 
 .no-results-message {
   text-align: center;
