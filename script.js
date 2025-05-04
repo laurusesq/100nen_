@@ -426,15 +426,18 @@ function extractUniqueTags(articles) {
 
 const selectedTags = new Set();
 
-function renderTagButtons(tagsWithCounts) {
+function renderTagButtons(tagsWithCounts, showAll = false) {
   const container = document.getElementById("tag-buttons");
   container.innerHTML = "";
 
-  tagsWithCounts.forEach(([tag, count]) => {
+  const MAX_VISIBLE = 20;
+  const tagsToRender = showAll ? tagsWithCounts : tagsWithCounts.slice(0, MAX_VISIBLE);
+
+  tagsToRender.forEach(([tag, count]) => {
     const btn = document.createElement("button");
     btn.textContent = `#${tag} (${count})`;
     btn.classList.add("tag-button");
-    btn.setAttribute("data-tag", tag); // ← これ追加すると再利用しやすい！
+    btn.setAttribute("data-tag", tag);
 
     if (selectedTags.has(tag)) {
       btn.classList.add("active");
@@ -448,12 +451,20 @@ function renderTagButtons(tagsWithCounts) {
         selectedTags.add(tag);
         btn.classList.add("active");
       }
-
       applyFilters();
     });
 
     container.appendChild(btn);
   });
+
+  // もっと見る / 折りたたむ ボタン
+  const toggleBtn = document.createElement("button");
+  toggleBtn.textContent = showAll ? "折りたたむ" : "もっと見る";
+  toggleBtn.classList.add("toggle-tags-button");
+  toggleBtn.addEventListener("click", () => {
+    renderTagButtons(tagsWithCounts, !showAll);
+  });
+  container.appendChild(toggleBtn);
 
   // タグクリアボタン
   document.getElementById("clear-tags").addEventListener("click", () => {
