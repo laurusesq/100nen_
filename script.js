@@ -76,7 +76,10 @@ fetch('https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles')
     const imageCount = data.filter(article => !!article["画像URL"]).length;
 
     // ✅ ソート（件数の多い順）
-    const sortedGenres = Object.entries(genreCounts).sort((a, b) => b[1] - a[1]);
+    const sortedGenres = Object.entries(genreCounts).sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1]; // 数値で降順
+      return a[0].localeCompare(b[0], 'ja'); // 同点なら五十音順
+    });
 
     // 「すべて」ボタン
     const allBtn = document.createElement("button");
@@ -412,7 +415,10 @@ function extractUniqueTags(articles) {
   });
 
   // 件数の多い順にソートして返す
-  return Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
+  return Object.entries(tagCounts).sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1]; // 数値で降順
+    return a[0].localeCompare(b[0], 'ja'); // 同点なら五十音順（日本語対応）
+  });
 }
 
 const selectedTags = new Set();
