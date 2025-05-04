@@ -472,8 +472,6 @@ function renderTagButtons(tagsWithCounts, showAll = false) {
 }
 
 async function checkWikipediaExistence(title) {
-return true;
-/*
   try {
     const apiUrl = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&titles=${encodeURIComponent(title)}&format=json`;
     const response = await fetch(apiUrl);
@@ -484,7 +482,6 @@ return true;
     console.error("Wikipediaチェック失敗:", title, e);
     return false;
   }
-*/
 }
 
 async function buildTagHTML(tags) {
