@@ -211,6 +211,7 @@
 .clickable-tag {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   vertical-align: middle;
   color: #007aff;
   background-color: #f0f0f0;
@@ -218,7 +219,7 @@
   margin: 4px 4px 0 0;
   border-radius: 12px;
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1;
   text-decoration: none;
   cursor: pointer;
 }
@@ -250,10 +251,12 @@
   margin-left: 4px;
   display: inline-flex;
   align-items: center;
+  height: 1em;
 }
 .wikipedia-icon img {
   height: 1em;
   width: 1em;
+  display: block;
   opacity: 0.75;
   transition: opacity 0.2s ease;
 }
