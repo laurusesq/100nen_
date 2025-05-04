@@ -244,20 +244,11 @@ function loadMore() {
       .map(tag => {
         // WikipediaのURLを生成
         const wikipediaLink = `https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}`;
-  
-        // Wikipediaのページがあるかどうかをチェック
-        const tagWithWiki = `
-          <span class="tag-label clickable-tag" data-tag="${tag}">
-            #${tag}
-            <a href="${wikipediaLink}" target="_blank" class="wikipedia-link" title="Wikipediaで調べる">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-brightness-high" viewBox="0 0 16 16">
-                <path d="M8 0c-.425 0-.833.103-1.184.286C6.315.499 5.665.95 5.302 1.556l-1.056 1.324L3.7 2.3l-.752 2.142-2.052-.56L1.688 5.56C.982 6.183.572 7.013.576 7.869l.001.436c.003.857.404 1.687 1.109 2.331l1.924 1.654-1.187 2.271 1.655 1.854 2.271-1.187 1.654 1.924c.644.704 1.474 1.106 2.331 1.109.856 0 1.687-.404 2.331-1.109l1.924-1.654 2.271 1.187-.187-2.271 1.654-1.654c.704-.645 1.106-1.474 1.109-2.331.003-.856-.401-1.687-1.106-2.331l-1.924-1.654 1.187-2.271-1.654-1.854-2.271 1.187-1.654-1.924c-.645-.704-1.474-1.106-2.331-1.109-.856 0-1.687.404-2.331 1.109l-1.924 1.654-2.271-1.187.187 2.271-1.654 1.654c-.704.645-1.106 1.474-1.109 2.331.003.856.402 1.687 1.107 2.331l1.924 1.654-1.187 2.271 1.654 1.854c-.365.246-.775.417-1.184.552C8.833 15.897 8.425 16 8 16z"/>
-              </svg>
-            </a>
-          </span>
-        `;
-  
-        return tagWithWiki;
+        const wikipediaIcon = `<a href="${wikipediaLink}" target="_blank" class="wikipedia-link" title="Wikipediaで${tag}を検索">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Wikipedia%27s_W.svg/128px-Wikipedia%27s_W.svg.png" alt="W" class="wikipedia-icon">
+        </a>`;
+      
+        return `<span class="tag-label clickable-tag" data-tag="${tag}">#${tag}</span> ${wikipediaIcon}`;
       })
       .join(" ");
   
