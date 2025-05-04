@@ -209,7 +209,8 @@
   color: white;
 }
 .clickable-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   vertical-align: middle;
   color: #007aff;
   background-color: #f0f0f0;
@@ -217,9 +218,11 @@
   margin: 4px 4px 0 0;
   border-radius: 12px;
   font-size: 12px;
+  line-height: 1.4;
+  text-decoration: none;
   cursor: pointer;
 }
-.clickable-tag:hover{
+.clickable-tag:hover {
   color: #0057a3;
 }
 .toggle-tags-button {
@@ -245,15 +248,12 @@
 }
 .wikipedia-icon {
   margin-left: 4px;
-  vertical-align: middle;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
 }
 .wikipedia-icon img {
   height: 1em;
   width: 1em;
-  vertical-align: middle;
-  display: inline-flex;
-  align-items: center;
   opacity: 0.75;
   transition: opacity 0.2s ease;
 }
