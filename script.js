@@ -489,6 +489,7 @@ function renderTagButtons(tagsWithCounts, showAll = false) {
 }
 
 async function checkWikipediaExistence(title) {
+return true;
   try {
     const apiUrl = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&titles=${encodeURIComponent(title)}&format=json`;
     const response = await fetch(apiUrl);
