@@ -419,7 +419,7 @@ function extractUniqueTags(articles) {
     });
   });
 
-  
+console.log(tagCounts);  
   // 件数の多い順にソートして返す
   return Object.entries(tagCounts).sort((a, b) => {
     if (b[1] !== a[1]) return b[1] - a[1]; // 数値で降順
