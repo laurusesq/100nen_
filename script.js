@@ -224,7 +224,7 @@ function applyFilters() {
   setupScrollSentinel();
 }
 
-function loadMore() {
+async function loadMore() {
   if (!window.filteredArticles || !Array.isArray(window.filteredArticles)) {
     return;
   }
