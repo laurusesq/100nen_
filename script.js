@@ -432,7 +432,7 @@ function renderTagButtons(tagsWithCounts) {
 
   tagsWithCounts.forEach(([tag, count]) => {
     const btn = document.createElement("button");
-    btn.textContent = `#${tag} (${count})`;
+    btn.textContent = `#♡${tag} (${count})`;
     btn.classList.add("tag-button");
     btn.setAttribute("data-tag", tag); // ← これ追加すると再利用しやすい！
 
