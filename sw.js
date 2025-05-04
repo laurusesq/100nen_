@@ -33,6 +33,12 @@ self.addEventListener('activate', event => {
 
 // 通常のフェッチ処理
 self.addEventListener('fetch', event => {
+  // script.js は常にネットワークから取得
+  if (event.request.url.includes('script.js')) {
+    return event.respondWith(fetch(event.request));
+  }
+
+  // それ以外はキャッシュ優先
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request);
