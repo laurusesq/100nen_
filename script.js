@@ -252,8 +252,6 @@ async function loadMore() {
       </div>
     `;
   }
-}
-
 
   // タグクリックで絞り込み
   const clickableTags = container.querySelectorAll(".clickable-tag"); 
