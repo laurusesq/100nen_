@@ -459,7 +459,7 @@ function renderTagButtons(tagsWithCounts, showAll = false) {
 
   // もっと見る / 折りたたむ ボタン
   const toggleBtn = document.createElement("button");
-  toggleBtn.textContent = showAll ? "折りたたむ" : "もっと見る";
+  toggleBtn.innerHTML = showAll ? "▲ 折りたたむ" : "▼ もっと見る";
   toggleBtn.classList.add("toggle-tags-button");
   toggleBtn.addEventListener("click", () => {
     renderTagButtons(tagsWithCounts, !showAll);
