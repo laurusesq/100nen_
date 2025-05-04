@@ -317,7 +317,7 @@ body {
 }
 .article:hover {
   border-color: #ddd;
-  filter: brightness(1.2);
+  filter: brightness(0.95);
   box-shadow: 0 6px 12px rgba(0,0,0,0.06);
 }
 
