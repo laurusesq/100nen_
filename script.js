@@ -235,23 +235,28 @@ function loadMore() {
   const container = document.getElementById("news");
   const end = visibleCount + BATCH_SIZE;
   const nextBatch = window.filteredArticles.slice(visibleCount, end);
-
-  nextBatch.forEach((article, i) => {
-    const tags = (article["タグ"] || "")
+  
+  for (const article of nextBatch) {
+    const rawTags = (article["タグ"] || "")
       .split(",")
       .map(tag => tag.trim())
-      .filter(tag => tag)
-      .map(tag => {
-        // WikipediaのURLを生成
-        const wikipediaLink = `https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}`;
-        const wikipediaIcon = `<a href="${wikipediaLink}" target="_blank" class="wikipedia-link" title="Wikipediaで${tag}を検索">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Wikipedia%27s_W.svg/16px-Wikipedia%27s_W.svg.png" alt="W" class="wikipedia-icon">
-        </a>`;
-      
-        return `<span class="tag-label clickable-tag" data-tag="${tag}">#${tag}</span> ${wikipediaIcon}`;
-      })
-      .join(" ");
+      .filter(tag => tag);
   
+    const tagHTMLParts = await Promise.all(
+      rawTags.map(async (tag) => {
+        const exists = await checkWikipediaExistence(tag);
+        const wikiIcon = exists
+          ? `<a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで見る">
+               <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia">
+             </a>`
+          : "";
+  
+        return `<span class="tag-label clickable-tag" data-tag="${tag}">#${tag}</span>${wikiIcon}`;
+      })
+    );
+  
+    const tags = tagHTMLParts.join(" ");
+
     container.innerHTML += `
       <div class="article">
         <div class="genre">${article["ジャンル"]}</div>
@@ -263,6 +268,7 @@ function loadMore() {
       </div>
     `;
   });
+  }
 
   // タグクリックで絞り込み
   const clickableTags = container.querySelectorAll(".clickable-tag"); 
@@ -480,6 +486,36 @@ function renderTagButtons(tagsWithCounts, showAll = false) {
     document.querySelectorAll(".tag-button").forEach(btn => btn.classList.remove("active"));
     applyFilters();
   });
+}
+
+async function checkWikipediaExistence(title) {
+  try {
+    const apiUrl = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&titles=${encodeURIComponent(title)}&format=json`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    const pages = data.query.pages;
+    return Object.keys(pages)[0] !== "-1";
+  } catch (e) {
+    console.error("Wikipediaチェック失敗:", title, e);
+    return false;
+  }
+}
+
+async function buildTagHTML(tags) {
+  const tagElements = await Promise.all(
+    tags.map(async (tag) => {
+      const exists = await checkWikipediaExistence(tag);
+      const wikipediaIcon = exists
+        ? `<a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
+          </a>`
+        : "";
+
+      return `<span class="tag-label clickable-tag" data-tag="${tag}">#${tag}</span>${wikipediaIcon}`;
+    })
+  );
+
+  return tagElements.join(" ");
 }
 
 function updateTagButtonStates() {
