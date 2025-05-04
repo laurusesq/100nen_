@@ -223,12 +223,27 @@
   margin-right: 4px;
 }
 .toggle-tags-button {
-  margin-top: 10px;
-  display: block;
-  background: #eee;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px auto 0;
+  padding: 8px 16px;
+  background-color: #0057a3; /* 濃いブルー */
+  color: white;
+  font-weight: bold;
   border: none;
-  padding: 5px 10px;
+  border-radius: 24px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.toggle-tags-button:hover {
+  background-color: #003f7d; /* ホバーで濃く */
+}
+
+.toggle-tags-button:active {
+  transform: scale(0.97);
 }
 
 .no-results-message {
