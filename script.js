@@ -241,7 +241,7 @@ function loadMore() {
       .split(",")
       .map(tag => tag.trim())
       .filter(tag => tag)
-      .map(tag => `<span class="tag-label clickable-tag" data-tag="${tag}">#${tag}</span>`)
+      .map(tag => `<span class="tag-label clickable-tag" data-tag="${tag}">♡#${tag}</span>`)
       .join(" ");
 
     container.innerHTML += `
