@@ -219,7 +219,7 @@
   font-size: 12px;
   cursor: pointer;
 }
-.clickable-tag hover{
+.clickable-tag:hover{
   color: #0057a3;
 }
 .toggle-tags-button {
