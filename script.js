@@ -416,7 +416,7 @@ function extractUniqueTags(articles) {
       tagCounts[tag] = (tagCounts[tag] || 0) + 1;
     });
   });
-
+Logger.log(tagCounts);
   // 件数の多い順 → 同じなら五十音順（日本語対応）でソート
   return Object.entries(tagCounts).sort((a, b) => {
     if (b[1] !== a[1]) return b[1] - a[1];
