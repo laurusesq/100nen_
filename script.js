@@ -416,17 +416,20 @@ function extractUniqueTags(articles) {
       tagCounts[tag] = (tagCounts[tag] || 0) + 1;
     });
   });
-Logger.log(tagCounts);
+
   // 件数の多い順 → 同じなら五十音順（日本語対応）でソート
   return Object.entries(tagCounts).sort((a, b) => {
     if (b[1] !== a[1]) return b[1] - a[1];
-    return a[0].localeCompare(b[0], 'ja', { numeric: true, sensitivity: 'base' });
+    return a[0].localeCompare(b[0], 'ja', { numeric: false, sensitivity: 'base', ignorePunctuation: true});
   });
 }
 
 const selectedTags = new Set();
 
 function renderTagButtons(tagsWithCounts) {
+
+  console.log(tagsWithCounts.map(([tag, count]) => `${tag} (${count})`).join("\n"));
+
   const container = document.getElementById("tag-buttons");
   container.innerHTML = "";
 
