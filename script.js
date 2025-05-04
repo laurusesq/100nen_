@@ -418,16 +418,16 @@ function extractUniqueTags(articles) {
   });
 
   // 件数の多い順 → 同じなら五十音順（日本語対応）でソート
-/*
   return Object.entries(tagCounts).sort((a, b) => {
     if (b[1] !== a[1]) return b[1] - a[1];
     return a[0].localeCompare(b[0], 'ja', { numeric: false, sensitivity: 'base', ignorePunctuation: true});
   });
-*/
+/*
   return Object.entries(tagCounts).sort((a, b) => {
     if (b[1] !== a[1]) return b[1] - a[1];
     return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0;
   });
+*/
 }
 
 const selectedTags = new Set();
