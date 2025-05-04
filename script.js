@@ -65,17 +65,17 @@ fetch('https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles')
     const filtersDiv = document.getElementById("filters");
     filtersDiv.innerHTML = "";
 
-    // ✅ ジャンル件数を数える
+    // ジャンル件数を数える
     const genreCounts = data.reduce((acc, article) => {
       const genre = article["ジャンル"] || "未分類";
       acc[genre] = (acc[genre] || 0) + 1;
       return acc;
     }, {});
 
-    // ✅ 画像あり件数
+    // 画像あり件数
     const imageCount = data.filter(article => !!article["画像URL"]).length;
 
-    // ✅ ソート（件数の多い順）
+    // ソート（件数の多い順）
     const sortedGenres = Object.entries(genreCounts).sort((a, b) => {
       if (b[1] !== a[1]) return b[1] - a[1]; // 数値で降順
       return a[0].localeCompare(b[0], 'ja'); // 同点なら五十音順
@@ -101,7 +101,7 @@ fetch('https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles')
     };
     filtersDiv.appendChild(imageBtn);
 
-    // ジャンルボタンたち
+    // その他のジャンルボタン
     sortedGenres.forEach(([genre, count]) => {
       const btn = document.createElement("button");
       btn.textContent = `${genre} (${count})`;
@@ -191,7 +191,7 @@ function applyFilters() {
     document.getElementById("scrollSentinel").style.display = "";
   }
 
-  // サムネ更新
+  // サムネイル更新
   const gallery = document.getElementById("thumbnailGallery");
   gallery.innerHTML = "";
   filteredThumbnailArticles = filtered.filter(article => !!article["画像URL"]);
@@ -406,7 +406,7 @@ function extractUniqueTags(articles) {
     if (!article["タグ"]) return;
     const tags = article["タグ"]
       .split(",")
-      .map(tag => tag.trim())  // 小文字変換なし
+      .map(tag => tag.trim())
       .filter(tag => tag !== "");
 
     tags.forEach(tag => {
@@ -565,7 +565,6 @@ function switchTab(tab) {
       if (thumbnailTitle) thumbnailTitle.style.display = "none";
       if (gallery) gallery.style.display = "none";
     } else {
-      // ← ここ追加
       if (thumbnailTitle) thumbnailTitle.style.display = "";
       if (gallery) gallery.style.display = "";
     }
@@ -577,7 +576,6 @@ function switchTab(tab) {
       if (thumbnailTitle) thumbnailTitle.style.display = "";
       if (gallery) gallery.style.display = "";
     } else {
-      // ← ここ追加
       if (thumbnailTitle) thumbnailTitle.style.display = "";
       if (gallery) gallery.style.display = "";
     }
