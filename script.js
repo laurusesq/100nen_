@@ -559,7 +559,7 @@ function addWikipediaIcons() {
         if (exists) {
           span.outerHTML = `
             <a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/16px-Wikipedia-logo-v2.svg.png" alt="Wikipedia" />
             </a>`;
         } else {
           span.remove();
