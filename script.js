@@ -471,15 +471,24 @@ function renderTagButtons(tagsWithCounts, showAll = false) {
   });
 }
 
+const wikiExistenceCache = {};
+
 async function checkWikipediaExistence(title) {
+  if (wikiExistenceCache[title] !== undefined) {
+    return wikiExistenceCache[title]; // キャッシュヒット
+  }
+
   try {
     const apiUrl = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&titles=${encodeURIComponent(title)}&format=json&redirects`;
     const response = await fetch(apiUrl);
     const data = await response.json();
-    const pages = data.query.pages;
-    return Object.keys(pages)[0] !== "-1";
+    const exists = Object.keys(data.query.pages)[0] !== "-1";
+
+    wikiExistenceCache[title] = exists; // 結果をキャッシュ
+    return exists;
   } catch (e) {
     console.error("Wikipediaチェック失敗:", title, e);
+    wikiExistenceCache[title] = false;
     return false;
   }
 }
