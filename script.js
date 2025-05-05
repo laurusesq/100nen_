@@ -486,17 +486,21 @@ function saveWikipediaCache(cache) {
   localStorage.setItem(WIKIPEDIA_CACHE_KEY, JSON.stringify(cache));
 }
 
-function isCacheExpired(timestamp) {
-  const now = new Date();
-  const then = new Date(timestamp);
-  const diffDays = (now - then) / (1000 * 60 * 60 * 24);
-  return diffDays > WIKIPEDIA_CACHE_EXPIRY_DAYS;
+function getRandomExpiryDate() {
+  const days = WIKIPEDIA_CACHE_EXPIRY_DAYS * (1 + Math.random()); // 30〜60日
+  const expiry = new Date();
+  expiry.setDate(expiry.getDate() + days);
+  return expiry;
+}
+
+function isCacheExpired(expiryDate) {
+  return new Date() > new Date(expiryDate);
 }
 
 async function checkWikipediaExistence(title) {
   const cache = getWikipediaCache();
 
-  if (cache[title] && !isCacheExpired(cache[title].lastChecked)) {
+  if (cache[title] && !isCacheExpired(cache[title].expiryDate)) {
     return cache[title].exists;
   }
 
@@ -507,10 +511,9 @@ async function checkWikipediaExistence(title) {
     const pages = data.query.pages;
     const exists = Object.keys(pages)[0] !== "-1";
 
-    // キャッシュに保存
     cache[title] = {
       exists: exists,
-      lastChecked: new Date().toISOString()
+      expiryDate: getRandomExpiryDate().toISOString()
     };
     saveWikipediaCache(cache);
 
