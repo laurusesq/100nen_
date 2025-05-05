@@ -522,11 +522,22 @@ async function checkWikipediaExistence(title) {
 }
 
 function buildTagHTML(tags) {
+  const cache = getWikipediaCache();
+
   return tags.map(tag => {
+    const cached = cache[tag];
+    const exists = cached && !isCacheExpired(cached.lastChecked) ? cached.exists : null;
+
+    const wikipediaIcon = exists
+      ? `<a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
+        </a>`
+      : `<span class="wikipedia-placeholder"></span>`;
+
     return `<span class="clickable-tag" data-tag="${tag}" data-wikipediatag="${tag}">
-              #${tag}<span class="wikipedia-placeholder"></span>
+              #${tag}${wikipediaIcon}
             </span>`;
-  }).join(" ");
+  }).join("");
 }
 
 function addWikipediaIcons() {
