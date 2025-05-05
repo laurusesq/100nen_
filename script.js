@@ -474,6 +474,54 @@ function renderTagButtons(tagsWithCounts, showAll = false) {
   });
 }
 
+const WIKIPEDIA_CACHE_KEY = "wikipediaExistenceCache";
+const WIKIPEDIA_CACHE_EXPIRY_DAYS = 30;
+
+function getWikipediaCache() {
+  const raw = localStorage.getItem(WIKIPEDIA_CACHE_KEY);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function saveWikipediaCache(cache) {
+  localStorage.setItem(WIKIPEDIA_CACHE_KEY, JSON.stringify(cache));
+}
+
+function isCacheExpired(timestamp) {
+  const now = new Date();
+  const then = new Date(timestamp);
+  const diffDays = (now - then) / (1000 * 60 * 60 * 24);
+  return diffDays > WIKIPEDIA_CACHE_EXPIRY_DAYS;
+}
+
+async function checkWikipediaExistence(title) {
+  const cache = getWikipediaCache();
+
+  if (cache[title] && !isCacheExpired(cache[title].lastChecked)) {
+    return cache[title].exists;
+  }
+
+  try {
+    const apiUrl = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&titles=${encodeURIComponent(title)}&format=json`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    const pages = data.query.pages;
+    const exists = Object.keys(pages)[0] !== "-1";
+
+    // キャッシュに保存
+    cache[title] = {
+      exists: exists,
+      lastChecked: new Date().toISOString()
+    };
+    saveWikipediaCache(cache);
+
+    return exists;
+  } catch (e) {
+    console.error("Wikipediaチェック失敗:", title, e);
+    return false;
+  }
+}
+
+/*
 const wikiExistenceCache = {};
 
 async function checkWikipediaExistence(title) {
@@ -495,6 +543,7 @@ async function checkWikipediaExistence(title) {
     return false;
   }
 }
+*/
 
 function buildTagHTML(tags) {
   return tags.map(tag => {
