@@ -500,27 +500,33 @@ function isCacheExpired(expiryDate) {
 async function checkWikipediaExistence(title) {
   const cache = getWikipediaCache();
 
-  if (cache[title] && !isCacheExpired(cache[title].expiryDate)) {
-    return cache[title].exists;
+  if (cache[title] && !isCacheExpired(cache[title].expiry)) {
+    return cache[title]; // { exists, redirectTo }
   }
 
   try {
-    const apiUrl = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&titles=${encodeURIComponent(title)}&format=json`;
+    const apiUrl = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&titles=${encodeURIComponent(title)}&redirects=1&format=json`;
     const response = await fetch(apiUrl);
     const data = await response.json();
-    const pages = data.query.pages;
-    const exists = Object.keys(pages)[0] !== "-1";
 
+    const pages = data.query.pages;
+    const page = Object.values(pages)[0];
+    const exists = page.pageid !== undefined;
+    const redirectTo = page.title;
+
+    // 保存
     cache[title] = {
-      exists: exists,
-      expiryDate: getRandomExpiryDate().toISOString()
+      exists,
+      redirectTo,
+      expiry: getRandomExpiryDate().toISOString()
     };
     saveWikipediaCache(cache);
 
-    return exists;
+    return cache[title];
+
   } catch (e) {
     console.error("Wikipediaチェック失敗:", title, e);
-    return false;
+    return { exists: false, redirectTo: title };
   }
 }
 
@@ -552,13 +558,12 @@ function addWikipediaIcons() {
         }
 
         const tag = entry.target.getAttribute("data-wikipediatag");
-        const exists = await checkWikipediaExistence(tag);
-        if (exists) {
-          span.outerHTML = generateWikipediaIcon(tag);
+        const result = await checkWikipediaExistence(tag);
+        if (result.exists) {
+          span.outerHTML = generateWikipediaIcon(tag, result.redirectTo);
         } else {
           span.remove();
         }
- 
         obs.unobserve(entry.target); // 一度処理したら監視解除
       }
     }
@@ -572,8 +577,8 @@ function addWikipediaIcons() {
   });
 }
 
-function generateWikipediaIcon(tag) {
-  const url = `https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}`;
+function generateWikipediaIcon(tag, actualTitle) {
+  const url = `https://ja.wikipedia.org/wiki/${encodeURIComponent(actualTitle)}`;
   return `
     <a href="${url}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで「${tag}」を検索">
       <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
