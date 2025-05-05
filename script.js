@@ -499,8 +499,11 @@ function isCacheExpired(expiryDate) {
 
 async function checkWikipediaExistence(title) {
   const cache = getWikipediaCache();
-
-  if (cache[title] && !isCacheExpired(cache[title].expiry)) {
+  if (
+    cache[title] &&
+    !isCacheExpired(cache[title].expiry) &&
+    typeof cache[title].redirectTo !== "undefined"
+  ) {
     return cache[title]; // { exists, redirectTo }
   }
 
