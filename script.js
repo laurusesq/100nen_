@@ -575,7 +575,7 @@ function addWikipediaIcons() {
 function generateWikipediaIcon(tag) {
   const url = `https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}`;
   return `
-    <a href="${url}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
+    <a href="${url}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで「${tag}」を検索">
       <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
     </a>`;
 }
