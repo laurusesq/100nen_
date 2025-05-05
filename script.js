@@ -532,9 +532,7 @@ function buildTagHTML(tags) {
     const exists = cached && !isCacheExpired(cached.lastChecked) ? cached.exists : null;
 
     const wikipediaIcon = exists
-      ? `<a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
-        </a>`
+      ? generateWikipediaIcon(tag)
       : `<span class="wikipedia-placeholder"></span>`;
 
     return `<span class="clickable-tag" data-tag="${tag}" data-wikipediatag="${tag}">
@@ -554,17 +552,13 @@ function addWikipediaIcons() {
         }
 
         const tag = entry.target.getAttribute("data-wikipediatag");
-
         const exists = await checkWikipediaExistence(tag);
         if (exists) {
-          span.outerHTML = `
-            <a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/16px-Wikipedia-logo-v2.svg.png" alt="Wikipedia" />
-            </a>`;
+          span.outerHTML = generateWikipediaIcon(tag);
         } else {
           span.remove();
         }
-
+ 
         obs.unobserve(entry.target); // 一度処理したら監視解除
       }
     }
@@ -576,6 +570,14 @@ function addWikipediaIcons() {
   document.querySelectorAll(".clickable-tag[data-wikipediatag]").forEach(el => {
     observer.observe(el);
   });
+}
+
+function generateWikipediaIcon(tag) {
+  const url = `https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}`;
+  return `
+    <a href="${url}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
+    </a>`;
 }
 
 function updateTagButtonStates() {
