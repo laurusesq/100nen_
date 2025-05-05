@@ -504,22 +504,39 @@ function buildTagHTML(tags) {
   }).join(" ");
 }
 
-async function addWikipediaIcons() {
-  const placeholders = document.querySelectorAll(".wikipedia-placeholder");
+function addWikipediaIcons() {
+  const observer = new IntersectionObserver(async (entries, obs) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        const span = entry.target.querySelector(".wikipedia-placeholder");
+        if (!span) {
+          obs.unobserve(entry.target);
+          continue;
+        }
 
-  for (const span of placeholders) {
-    const tag = span.parentElement.getAttribute("data-wikipediatag");
-    const exists = await checkWikipediaExistence(tag);
+        const tag = entry.target.getAttribute("data-wikipediatag");
 
-    if (exists) {
-      span.outerHTML = `
-        <a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
-        </a>`;
-    } else {
-      span.remove(); // 存在しなければ削除
+        const exists = await checkWikipediaExistence(tag);
+        if (exists) {
+          span.outerHTML = `
+            <a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
+            </a>`;
+        } else {
+          span.remove();
+        }
+
+        obs.unobserve(entry.target); // 一度処理したら監視解除
+      }
     }
-  }
+  }, {
+    rootMargin: "200px", // 画面に入る前に処理する余裕を持つ
+    threshold: 0.1
+  });
+
+  document.querySelectorAll(".clickable-tag[data-wikipediatag]").forEach(el => {
+    observer.observe(el);
+  });
 }
 
 function updateTagButtonStates() {
