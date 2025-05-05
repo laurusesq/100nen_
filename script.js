@@ -538,10 +538,12 @@ function buildTagHTML(tags) {
 
   return tags.map(tag => {
     const cached = cache[tag];
-    const exists = cached && !isCacheExpired(cached.lastChecked) ? cached.exists : null;
+    const isValid = cached && !isCacheExpired(cached.expiry);
+    const exists = isValid ? cached.exists : null;
+    const redirectTo = isValid ? cached.redirectTo : null;
 
     const wikipediaIcon = exists
-      ? generateWikipediaIcon(tag)
+      ? generateWikipediaIcon(tag, redirectTo)
       : `<span class="wikipedia-placeholder"></span>`;
 
     return `<span class="clickable-tag" data-tag="${tag}" data-wikipediatag="${tag}">
@@ -581,7 +583,8 @@ function addWikipediaIcons() {
 }
 
 function generateWikipediaIcon(tag, actualTitle) {
-  const url = `https://ja.wikipedia.org/wiki/${encodeURIComponent(actualTitle)}`;
+  const finalTitle = actualTitle || tag;
+  const url = `https://ja.wikipedia.org/wiki/${encodeURIComponent(finalTitle)}`;
   return `
     <a href="${url}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで「${tag}」を検索">
       <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
