@@ -256,16 +256,20 @@ async function loadMore() {
   // タグクリックで絞り込み
   const clickableTags = container.querySelectorAll(".clickable-tag"); 
   clickableTags.forEach(tagEl => {
-    tagEl.addEventListener("click", () => {
+    tagEl.addEventListener("click", event => {
+      if (event.target.closest(".wikipedia-icon")) {
+        return; // Wikipediaアイコンのクリックだったら何もしない
+      }
+  
       const tag = tagEl.getAttribute("data-tag");
-
+  
       // 単一選択モード
       selectedTags.clear();
       selectedTags.add(tag);
-
+  
       // タグ一覧にも反映
       updateTagButtonStates();
-
+  
       // フィルター反映
       applyFilters();
     });
