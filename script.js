@@ -277,6 +277,9 @@ async function loadMore() {
     isLoading = false;
     checkInitialScrollability(); // ← 再度チェック（記事が画面に足りないとき用）
   }, 300);
+
+  await addWikipediaIcons();
+
 }
 
 function setupScrollSentinel() {
@@ -493,21 +496,30 @@ async function checkWikipediaExistence(title) {
   }
 }
 
-async function buildTagHTML(tags) {
-  const tagElements = await Promise.all(
-    tags.map(async (tag) => {
-      const exists = await checkWikipediaExistence(tag);
-      const wikipediaIcon = exists
-        ? `<a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
-          </a>`
-        : "";
+function buildTagHTML(tags) {
+  return tags.map(tag => {
+    return `<span class="clickable-tag" data-tag="${tag}" data-wikipediatag="${tag}">
+              #${tag}<span class="wikipedia-placeholder"></span>
+            </span>`;
+  }).join(" ");
+}
 
-      return `<span class="clickable-tag" data-tag="${tag}">#${tag}${wikipediaIcon}</span>`;
-    })
-  );
+async function addWikipediaIcons() {
+  const placeholders = document.querySelectorAll(".wikipedia-placeholder");
 
-  return tagElements.join(" ");
+  for (const span of placeholders) {
+    const tag = span.parentElement.getAttribute("data-wikipediatag");
+    const exists = await checkWikipediaExistence(tag);
+
+    if (exists) {
+      span.outerHTML = `
+        <a href="https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで${tag}を検索">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
+        </a>`;
+    } else {
+      span.remove(); // 存在しなければ削除
+    }
+  }
 }
 
 function updateTagButtonStates() {
