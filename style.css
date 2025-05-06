@@ -246,9 +246,6 @@
 #toggle-tags:hover {
   background-color: #003f7d; /* ホバーで濃く */
 }
-#toggle-tags:active {
-  transform: scale(0.98); /* 押したとき少し縮む */
-}
 #clear-tags {
   margin: 4px;
   padding: 4px 10px;
@@ -260,11 +257,13 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
-
 #clear-tags:hover {
   background-color: #fdd;
   color: #800;
   border-color: #800;
+}
+#toggle-tags:active, #toggle-tags:active {
+  transform: scale(0.98); /* 押したとき少し縮む */
 }
 
 .clickable-tag {
