@@ -155,28 +155,35 @@ function applyFilters() {
       (article["著者"] || "").toLowerCase().includes(keyword)
     );
   }
-
   const sortType = document.getElementById("sortSelect")?.value;
+  const keyword = document.getElementById("searchBox")?.value.trim().toLowerCase();
+  
   filtered.sort((a, b) => {
     switch (sortType) {
+      case "relevance":
+        const getScore = (item) => {
+          let score = 0;
+          if (!keyword) return score;
+          const title = item["タイトル"]?.toLowerCase() || "";
+          const body = item["本文"]?.toLowerCase() || "";
+  
+          // タイトルに含まれていれば +3
+          if (title.includes(keyword)) score += 3;
+          // 本文に含まれていれば +1
+          if (body.includes(keyword)) score += 1;
+  
+          return score;
+        };
+        return getScore(b) - getScore(a); // 高スコア順
       case "dateAsc":
         return a["日付"]?.localeCompare(b["日付"]);
       case "dateDesc":
         return b["日付"]?.localeCompare(a["日付"]);
-      case "authorAsc":
-        return (a["著者"] || "").localeCompare(b["著者"] || "");
-      case "authorDesc":
-        return (b["著者"] || "").localeCompare(a["著者"] || "");
-      case "titleAsc":
-        return (a["タイトル"] || "").localeCompare(b["タイトル"] || "");
-      case "titleDesc":
-        return (b["タイトル"] || "").localeCompare(a["タイトル"] || "");
-      case "hasImage":
-        return (b["画像URL"] ? 1 : 0) - (a["画像URL"] ? 1 : 0);
       default:
         return 0;
     }
   });
+
 
   window.filteredArticles = filtered;
   const noResultsEl = document.getElementById("noResults");
