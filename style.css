@@ -3,9 +3,6 @@
     flex-direction: row;
     align-items: flex-start;
   }
-  #news, #thumbnailGallery {
-    display: block;
-  }
   #news {
     flex: 3;
   }
@@ -13,6 +10,7 @@
     flex: 2;
   }
 }
+
 
 @media (max-width: 799px) {
   .body {
