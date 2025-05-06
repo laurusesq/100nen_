@@ -306,9 +306,6 @@ body {
   display: block;
   content: "";
 }
-.body br::after {
-  content: "　"; /* 全角スペース */
-}
 .body p {
   text-indent: 1em;
   margin-bottom: 1.2em;
