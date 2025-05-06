@@ -430,9 +430,11 @@ function extractUniqueTags(articles) {
 }
 
 const selectedTags = new Set();
-
 function renderTagButtons(tagsWithCounts, showAll = false) {
   const container = document.getElementById("tag-buttons");
+  const toggleBtn = document.getElementById("toggle-tags");
+  const clearBtn = document.getElementById("clear-tags");
+
   container.innerHTML = "";
 
   const MAX_VISIBLE = 20;
@@ -462,21 +464,15 @@ function renderTagButtons(tagsWithCounts, showAll = false) {
     container.appendChild(btn);
   });
 
-  // もっと見る / 折りたたむ ボタン
-  const toggleBtn = document.createElement("button");
+  // イベントリスナーの更新
   toggleBtn.innerHTML = showAll ? "▲ 折りたたむ" : "▼ もっと見る";
-  toggleBtn.classList.add("toggle-tags-button");
-  toggleBtn.addEventListener("click", () => {
-    renderTagButtons(tagsWithCounts, !showAll);
-  });
-  container.appendChild(toggleBtn);
+  toggleBtn.onclick = () => renderTagButtons(tagsWithCounts, !showAll);
 
-  // タグクリアボタン
-  document.getElementById("clear-tags").addEventListener("click", () => {
+  clearBtn.onclick = () => {
     selectedTags.clear();
     document.querySelectorAll(".tag-button").forEach(btn => btn.classList.remove("active"));
     applyFilters();
-  });
+  };
 }
 
 const WIKIPEDIA_CACHE_KEY = "wikipediaExistenceCache";
