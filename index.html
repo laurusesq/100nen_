@@ -24,9 +24,14 @@
   <div id="ios-tip">ホーム画面に追加するには、Safariで「共有ボタン → ホーム画面に追加」を選んでね！</div>
   <div id="updateNotice">🔄 新しいバージョンがあります。タップで更新</div>
 
-  <div id="search-box" style="margin-bottom: 10px;">
-    <input type="text" id="searchInput" placeholder="キーワードで検索" oninput="applyFilters()" />
-  </div>
+<div id="search-box" style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+  <input type="text" id="searchInput" placeholder="キーワードで検索" oninput="applyFilters()" />
+  <select id="sortSelect" onchange="applyFilters()">
+    <option value="relevance">適合度順</option>
+    <option value="dateDesc">新しい順</option>
+    <option value="dateAsc">古い順</option>
+  </select>
+</div>
   <div id="genres" style="margin-bottom: 20px;">
     <button onclick="setGenre('すべて')">すべて</button>
   </div>
@@ -38,19 +43,6 @@
     </div>
     <div id="tag-buttons"></div>
   </div>
-  <div id="sortBox" style="margin-bottom: 20px;">
-    <label for="sortSelect">並べ替え：</label>
-    <select id="sortSelect" onchange="applyFilters()">
-      <option value="dateDesc">新しい順</option>
-      <option value="dateAsc">古い順</option>
-      <option value="authorAsc">著者名順（A→Z）</option>
-      <option value="authorDesc">著者名順（Z→A）</option>
-      <option value="titleAsc">タイトル順（A→Z）</option>
-      <option value="titleDesc">タイトル順（Z→A）</option>
-      <option value="hasImage">画像付き優先</option>
-    </select>
-  </div>
-
   <div id="tab-buttons">
     <button onclick="switchTab('articles')">📰 記事</button>
     <button onclick="switchTab('thumbnails')">🖼️ 画像</button>
