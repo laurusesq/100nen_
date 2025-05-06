@@ -43,12 +43,36 @@
   cursor: pointer;
   font-family: 'Georgia', serif;
 }
-
 .tab-content {
   display: none;
 }
 .tab-content.active {
   display: block;
+}
+.search-wrapper {
+  position: relative;
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+.search-wrapper input {
+  width: 100%;
+  padding: 6px 12px 6px 32px; /* 左に余白を多めに */
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 16px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.search-wrapper input:focus {
+  border-color: #0077cc;
+}
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #777;
 }
 #search-box {
   margin-bottom: 16px;
