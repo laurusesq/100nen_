@@ -151,8 +151,7 @@ function applyFilters() {
   if (keyword) {
     filtered = filtered.filter(article =>
       (article["タイトル"] || "").toLowerCase().includes(keyword) ||
-      (article["本文"] || "").toLowerCase().includes(keyword) ||
-      (article["著者"] || "").toLowerCase().includes(keyword)
+      (article["本文"] || "").toLowerCase().includes(keyword)
     );
   }
   const sortType = document.getElementById("sortSelect")?.value;
