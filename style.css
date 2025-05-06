@@ -298,7 +298,7 @@ body {
   color: #444;
 }
 .body br {
-  margin-bottom: 0.6em;
+  margin-bottom: 1em;
   display: block;
   content: "";
 }
