@@ -262,7 +262,7 @@
   color: #800;
   border-color: #800;
 }
-#toggle-tags:active, #toggle-tags:active {
+#toggle-tags:active, #clear-tags:active {
   transform: scale(0.2); /* 押したとき少し縮む */
 }
 
