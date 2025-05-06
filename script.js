@@ -154,8 +154,8 @@ function applyFilters() {
       (article["本文"] || "").toLowerCase().includes(keyword)
     );
   }
+
   const sortType = document.getElementById("sortSelect")?.value;
-  const keyword = document.getElementById("searchBox")?.value.trim().toLowerCase();
   
   filtered.sort((a, b) => {
     switch (sortType) {
