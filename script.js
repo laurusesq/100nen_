@@ -90,7 +90,8 @@ fetch('https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles')
       applyFilters();
     };
     filtersDiv.appendChild(allBtn);
-
+    allBtn.onclick();
+    
     // 「画像あり」ボタン
     const imageBtn = document.createElement("button");
     imageBtn.textContent = `画像あり (${imageCount})`;
