@@ -430,6 +430,7 @@ function extractUniqueTags(articles) {
 }
 
 const selectedTags = new Set();
+
 function renderTagButtons(tagsWithCounts, showAll = false) {
   const container = document.getElementById("tag-buttons");
   const toggleBtn = document.getElementById("toggle-tags");
