@@ -540,8 +540,9 @@ async function checkWikipediaExistence(title) {
 
 function buildTagHTML(tags) {
   const cache = getWikipediaCache();
+  const uniqueTags = [...new Set(tags)];
 
-  return tags.map(tag => {
+  return uniqueTags.map(tag => {
     const cached = cache[tag];
     const isValid = cached && !isCacheExpired(cached.expiry);
     const exists = isValid ? cached.exists : null;
