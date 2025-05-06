@@ -250,17 +250,17 @@
   margin: 4px;
   padding: 4px 10px;
   font-size: 13px;
-  color: #a00;
+  color: #0057a3;
   background: none;
-  border: 1px solid #a00;
+  border: 1px solid #0057a3;
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 #clear-tags:hover {
-  background-color: #fdd;
-  color: #800;
-  border-color: #800;
+  background-color: #e6f0fa;
+  color: #003f7d;
+  border-color: #003f7d;
 }
 #toggle-tags:active, #clear-tags:active {
   transform: scale(0.95); /* 押したとき少し縮む */
