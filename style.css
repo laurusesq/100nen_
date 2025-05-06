@@ -200,20 +200,6 @@
 .button:hover {
   background-color: #41b3a3;
 }
-/*
-.tag-button {
-  margin: 4px;
-  padding: 4px 8px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #f3f3f3;
-}
-.tag-button.active {
-  background-color: #007bff;
-  color: white;
-}
-*/
 .tag-button {
   margin: 4px;
   padding: 4px 10px;
@@ -235,6 +221,31 @@
   color: #fff;
   font-weight: 500;
 }
+.toggle-tags-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px auto 0;
+  padding: 6px 14px;
+  background-color: #0057a3; /* 濃いブルー */
+  color: white;
+  font-weight: normal; /* 少し軽めに */
+  font-size: 14px;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-tags-button:hover {
+  background-color: #003f7d; /* ホバーで濃く */
+}
+
+.toggle-tags-button:active {
+  transform: scale(0.98); /* 押したとき少し縮む */
+}
+
 .clickable-tag {
   display: inline-flex;
   align-items: center;
@@ -253,27 +264,6 @@
 .clickable-tag:hover {
   transform: scale(1.05);
   color: #0057a3;
-}
-.toggle-tags-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 16px auto 0;
-  padding: 8px 16px;
-  background-color: #0057a3; /* 濃いブルー */
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 24px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-.toggle-tags-button:hover {
-  background-color: #003f7d; /* ホバーで濃く */
-}
-.toggle-tags-button:active {
-  transform: scale(0.97);
 }
 .wikipedia-icon {
   margin-left: 4px;
