@@ -62,7 +62,7 @@ fetch('https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles')
   .then(data => {
     allArticles = data;
 
-    const filtersDiv = document.getElementById("filters");
+    const filtersDiv = document.getElementById("genres");
     filtersDiv.innerHTML = "";
 
     // ジャンル件数を数える
@@ -401,7 +401,7 @@ function setGenre(genre) {
 }
 
 function highlightActiveButton(activeBtn) {
-  const buttons = document.querySelectorAll("#filters button");
+  const buttons = document.querySelectorAll("#genres button");
   buttons.forEach(btn => btn.classList.remove("active"));
   activeBtn.classList.add("active");
 }
