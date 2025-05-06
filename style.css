@@ -287,7 +287,7 @@ body {
   font-weight: bold;
   font-family: 'Georgia', serif;
   color: #222;
-  margin-bottom: 6px;
+  margin-bottom: 0.5em;
 }
 .body {
   font-size: 16px;
@@ -301,6 +301,9 @@ body {
   margin-bottom: 1.5em;
   display: block;
   content: "";
+}
+.body p {
+  margin-bottom: 1.2em;
 }
 .genre {
   background-color: #e1b12c;  /* マスタード */
