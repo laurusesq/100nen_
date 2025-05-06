@@ -43,6 +43,10 @@
 }
 
 @media (max-width: 799px) {
+  .body {
+    font-size: 14px;
+    line-height: 1.6;
+  }
   #tab-buttons {
     display: flex;
   }
@@ -292,7 +296,7 @@ body {
 .body {
   font-size: 16px;
   font-family: 'Times New Roman', serif;
-  line-height: 1.7;
+  line-height: 1.8;
   margin-top: 0.5em;
   white-space: normal;
   color: #444;
@@ -303,6 +307,7 @@ body {
   content: "";
 }
 .body p {
+  text-indent: 1em;
   margin-bottom: 1.2em;
 }
 .genre {
