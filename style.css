@@ -215,27 +215,25 @@
 }
 */
 .tag-button {
-  margin: 6px;
-  padding: 6px 14px;
-  border: none;
-  border-radius: 9999px; /* 丸みを最大に */
-  background: #f0f4f8;
+  margin: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
   color: #333;
-  font-size: 14px;
-  font-weight: 500;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  transition: all 0.15s ease;
 }
 .tag-button:hover {
-  background: #dbe9f4;
-  transform: scale(1.05);
+  border-color: #888;
+  color: #000;
 }
 .tag-button.active {
   background-color: #007bff;
-  color: white;
-  font-weight: bold;
-  box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
+  border-color: #007bff;
+  color: #fff;
+  font-weight: 500;
 }
 .clickable-tag {
   display: inline-flex;
