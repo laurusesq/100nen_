@@ -59,7 +59,7 @@
   font-family: 'Times New Roman', serif;
   border: 1px solid #aaa;
 }
-#filters button {
+#genres button {
   padding: 8px 16px;
   margin: 4px;
   border: none;
@@ -69,7 +69,7 @@
   cursor: pointer;
   transition: background 0.2s ease;
 }
-#filters button:hover {
+#genres button:hover {
   background: #c0c0c0;
 }
 #scrollSentinel {
@@ -181,7 +181,7 @@
 .close-btn:hover {
   transform: scale(1.2);
 }
-#filters button.active {
+#genres button.active {
   background-color: #ff9800;
   color: white;
   font-weight: bold;
