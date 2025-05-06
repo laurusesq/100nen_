@@ -249,6 +249,21 @@
 #toggle-tags:active {
   transform: scale(0.98); /* 押したとき少し縮む */
 }
+#clear-tags {
+  padding: 4px 10px;
+  font-size: 13px;
+  color: #a00; /* 落ち着いた赤 */
+  background: none;
+  border: 1px solid #a00;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#clear-tags:hover {
+  background-color: #fdd;
+  color: #800;
+  border-color: #800;
+}
 
 .clickable-tag {
   display: inline-flex;
