@@ -3,6 +3,10 @@
     flex-direction: row;
     align-items: flex-start;
   }
+  #news, #thumbnailGallery {
+    display: flex;
+    flex-direction: column;
+  }
   #news {
     flex: 3;
   }
