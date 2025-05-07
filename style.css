@@ -375,29 +375,18 @@ body {
   gap: 12px;
   margin: 30px 0;
 }
-.thumbnail {
+img.thumbnail {
   width: 100%;
-  height: 0;
-  padding-top: 75%; /* 4:3 アスペクト比 */
-  position: relative;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
   border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: zoom-in;
 }
-img.thumbnail {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.thumbnail:hover {
+img.thumbnail:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 @media (min-width: 800px) {
