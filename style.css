@@ -396,9 +396,6 @@ img.thumbnail:hover {
   #news {
     flex: 3;
   }
-  #thumbnailGallery {
-    flex: 2;
-  }
 }
 
 @media (max-width: 799px) {
