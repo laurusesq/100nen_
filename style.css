@@ -399,11 +399,6 @@ img.thumbnail {
   transform: scale(1.05);
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
-.thumbnail::before {
-  content: '';
-  display: block;
-  padding-top: 75%; /* 4:3 比率を作るためのトリック */
-}
 
 @media (min-width: 800px) {
   #mainContent {
