@@ -53,29 +53,30 @@
 }
 #genres {
   display: flex;
-  border-bottom: 2px solid #ccc;
-  gap: 0; /* ボタン間の隙間をなくす */
+  border-bottom: 2px solid #dcdcdc;
+  gap: 0; /* ボタン間の隙間なし */
+  margin-bottom: 20px;
 }
 #genres button {
-  padding: 10px 16px;
+  padding: 12px 18px;
   margin: 0;
   background: transparent;
   border: none;
-  border-bottom: 4px solid transparent;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  border-bottom: 3px solid transparent;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-size: 15px;
-  color: #333;
+  color: #444;
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition: border-color 0.25s ease, color 0.25s ease;
 }
 #genres button:hover {
-  border-bottom-color: #999;
-  color: #000;
+  color: #222;
+  border-bottom-color: #aaa;
 }
 #genres button.active {
-  border-bottom-color: #0077cc; /* 強調色（青系） */
-  font-weight: bold;
-  color: #0077cc;
+  border-bottom: 3px solid #0056b3; /* 深めの青で落ち着いた印象 */
+  color: #0056b3;
+  font-weight: 600;
 }
 
 #scrollSentinel {
