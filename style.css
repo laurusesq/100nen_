@@ -51,23 +51,33 @@
   background-color: #f9f9f9;
   cursor: pointer;
 }
+#genres {
+  display: flex;
+  border-bottom: 2px solid #ccc;
+  gap: 0; /* ボタン間の隙間をなくす */
+}
 #genres button {
-  padding: 6px 14px;
-  margin: 4px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #f9f9f9;
-  color: #333;
+  padding: 10px 16px;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 4px solid transparent;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  color: #333;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
 #genres button:hover {
-  background: #eaeaea;
-  border-color: #999;
+  border-bottom-color: #999;
+  color: #000;
 }
+#genres button.active {
+  border-bottom-color: #0077cc; /* 強調色（青系） */
+  font-weight: bold;
+  color: #0077cc;
+}
+
 #scrollSentinel {
   height: 50px;
 }
