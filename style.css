@@ -54,22 +54,19 @@
 #genres button {
   padding: 6px 14px;
   margin: 4px;
-  border: 1px solid transparent;
-  border-radius: 9999px;
-  background: #f3f4f6;
-  color: #111827;
-  font-family: 'Inter', sans-serif;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f9f9f9;
+  color: #333;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 #genres button:hover {
-  background: #e0e7ff;
-  color: #1e3a8a;
-  border-color: #c7d2fe;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  background: #eaeaea;
+  border-color: #999;
 }
 #scrollSentinel {
   height: 50px;
