@@ -24,33 +24,42 @@
   display: block;
 }
 #search-box {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
+
 #searchInput,
 #sortSelect {
-  padding: 6px 12px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 16px;
+  padding: 8px 14px;
+  font-size: 15px;
+  border: 1px solid #bbb;
+  border-radius: 20px;
   outline: none;
-  transition: border-color 0.2s ease;
+  background-color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
+
 #searchInput:focus,
 #sortSelect:focus {
-  border-color: #0077cc;
+  border-color: #0a3d62;
+  box-shadow: 0 0 0 2px rgba(10, 61, 98, 0.1);
 }
+
 #searchInput {
-  flex: 1 1 200px;
+  flex: 1 1 220px;
   min-width: 180px;
 }
+
 #sortSelect {
-  background-color: #f9f9f9;
+  background-color: #f1f1f1;
+  color: #333;
   cursor: pointer;
 }
+
 #genres {
   display: flex;
   border-bottom: 2px solid #ccc;
