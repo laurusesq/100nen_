@@ -24,7 +24,7 @@
   <div id="ios-tip">ホーム画面に追加するには、Safariで「共有ボタン → ホーム画面に追加」を選んでね！</div>
   <div id="updateNotice">🔄 新しいバージョンがあります。タップで更新</div>
 
-  <div id="search-box" style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+  <div id="search-box">
     <input type="text" id="searchInput" placeholder="キーワードで検索" oninput="applyFilters()" />
     <select id="sortSelect" onchange="applyFilters()">
       <option value="relevance">適合度順</option>
@@ -32,7 +32,7 @@
       <option value="dateAsc">古い順</option>
     </select>
   </div>
-  <div id="genres" style="margin-bottom: 20px;">
+  <div id="genres">
     <button onclick="setGenre('すべて')">すべて</button>
   </div>
   <div id="tag-filter">
