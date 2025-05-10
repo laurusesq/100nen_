@@ -53,9 +53,9 @@
 }
 #genres {
   display: flex;
-  border-bottom: 2px solid #dcdcdc;
-  gap: 0; /* ボタン間の隙間なし */
+  border-bottom: 2px solid #ccc;
   margin-bottom: 20px;
+  gap: 0;
 }
 #genres button {
   padding: 10px 14px;
@@ -64,20 +64,20 @@
   border: none;
   border-bottom: 3px solid transparent;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  color: #444;
+  font-size: 15px;
+  color: #334;
   cursor: pointer;
-  transition: border-color 0.25s ease, color 0.25s ease;
+  transition: border-color 0.2s ease, color 0.1s ease;
 }
 #genres button:hover {
-  color: #222;
-  border-bottom-color: #aaa;
+  color: #1b2b4f;
+  border-bottom-color: #5a6b8c;
+  font-weight: 600;
 }
 #genres button.active {
-  color: #0a3d62;
-  border-bottom: 3px solid #0a3d62;
+  color: #1b2b4f;
+  border-bottom: 3px solid #1b2b4f;
   font-weight: 600;
-  background: transparent;
 }
 
 #scrollSentinel {
