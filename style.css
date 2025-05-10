@@ -23,59 +23,55 @@
 .tab-content.active {
   display: block;
 }
+
 #search-box {
-  margin-bottom: 20px;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: stretch;
   flex-wrap: wrap;
-}
-
-#searchInput,
-#sortSelect {
-  padding: 8px 14px;
-  font-size: 15px;
-  border: 1px solid #bbb;
-  border-radius: 20px;
-  outline: none;
-  background-color: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
-#searchInput:focus,
-#sortSelect:focus {
-  border-color: #0a3d62;
-  box-shadow: 0 0 0 2px rgba(10, 61, 98, 0.1);
+  gap: 12px;
+  margin-bottom: 24px;
+  background: #f5f7fa;
+  padding: 16px 20px;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
 
 #searchInput {
-  flex: 1 1 220px;
-  min-width: 180px;
+  flex: 1 1 240px;
+  min-width: 200px;
+  padding: 10px 16px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 30px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: white;
+}
+#searchInput:focus {
+  border-color: #0a3d62;
+  box-shadow: 0 0 0 2px rgba(10, 61, 98, 0.15);
 }
 
 #sortSelect {
-  appearance: none; /* ブラウザ標準の矢印を消す */
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  position: relative;
 
-  padding: 8px 36px 8px 14px; /* 右に矢印用の余白 */
+  padding: 10px 40px 10px 16px;
   font-size: 15px;
-  border: 1px solid #bbb;
-  border-radius: 20px;
-  background-color: #f1f1f1;
-  color: #333;
+  color: #0a3d62;
+  background: #eaf1f8 url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 50 l60 60 60 -60' fill='none' stroke='%230a3d62' stroke-width='14'/%3E%3C/svg%3E") no-repeat right 12px center;
+  background-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 30px;
   cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 50 l60 60 60 -60' fill='none' stroke='%23333' stroke-width='14'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 12px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease;
 }
-
 #sortSelect:focus {
   border-color: #0a3d62;
-  box-shadow: 0 0 0 2px rgba(10, 61, 98, 0.1);
+  box-shadow: 0 0 0 2px rgba(10, 61, 98, 0.15);
 }
 
 #genres {
