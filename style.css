@@ -441,8 +441,6 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* スマホ対応 */
   gap: 8px;
   margin: 16px 0; /* 余白を減らす */
-  max-height: 100%;
-  overflow-y: auto;
 }
 
 img.thumbnail {
@@ -469,7 +467,7 @@ img.thumbnail:hover {
     flex: 3;
   }
   #thumbnailGallery {
-    flex: 2;
+/*    flex: 2;*/
   }
   #mainContent.active-articles #news {
     display: block;
