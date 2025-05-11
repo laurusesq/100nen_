@@ -139,6 +139,10 @@
   right: 0;
   background: linear-gradient(to left, white 0%, transparent 100%);
 }
+.genre-scroll-wrapper::before,
+.genre-scroll-wrapper::after {
+  display: none;
+}
 
 /* ◀▶ボタン */
 .scroll-indicator {
