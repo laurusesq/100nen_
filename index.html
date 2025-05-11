@@ -24,8 +24,12 @@
   <div id="updateNotice">🔄 新しいバージョンがあります。タップで更新</div>
 
   <!-- ジャンル選択タブ -->
-  <div id="genres">
-    <button onclick="setGenre('すべて')">すべて</button>
+  <div class="genre-scroll-wrapper">
+    <div id="genres">
+      <button onclick="setGenre('すべて')">すべて</button>
+    </div>
+    <div class="scroll-indicator left">◀</div>
+    <div class="scroll-indicator right">▶</div>
   </div>
 
   <!-- 左右分割 -->
