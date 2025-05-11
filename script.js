@@ -674,12 +674,18 @@ function switchTab(tab) {
 window.onresize = function () {
   const main = document.getElementById("mainContent");
 
-  if (main.classList.contains("active-articles")) {
-    switchTab("articles");
-  } else if (main.classList.contains("active-tags")) {
-    switchTab("tags");
-  } else if (main.classList.contains("active-thumbnails")) {
-    switchTab("thumbnails");
+  if (window.innerWidth >= 800) {
+    // PC表示に戻ったらスマホ用クラスを削除（すべて表示される前提）
+    main.classList.remove("active-articles", "active-tags", "active-thumbnails");
+  } else {
+    // スマホ表示では現在のタブを維持して再描画
+    if (main.classList.contains("active-articles")) {
+      switchTab("articles");
+    } else if (main.classList.contains("active-tags")) {
+      switchTab("tags");
+    } else if (main.classList.contains("active-thumbnails")) {
+      switchTab("thumbnails");
+    }
   }
 };
 
