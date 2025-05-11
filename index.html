@@ -1,74 +1,59 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
-  <title>百年前新聞オンライン</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="/icon.png" type="image/png">
-  <link rel="stylesheet" href="style.css">
-
-  <!-- iOS用: ホーム画面追加に必要 -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="百年前新聞">
-  <link rel="apple-touch-icon" href="/icon.png">
-
-  <!-- 通常のPWA向け -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#333333">
-</head>
-
 <body>
-
-  <!-- 簡易ポップアップ -->
+  <!-- iOS案内と更新通知 -->
   <div id="ios-tip">ホーム画面に追加するには、Safariで「共有ボタン → ホーム画面に追加」を選んでね！</div>
   <div id="updateNotice">🔄 新しいバージョンがあります。タップで更新</div>
 
-  <div id="search-box">
-    <input type="text" id="searchInput" placeholder="キーワードで検索" oninput="applyFilters()" />
-    <select id="sortSelect" onchange="applyFilters()">
-      <option value="relevance">適合度順</option>
-      <option value="dateDesc">新しい順</option>
-      <option value="dateAsc">古い順</option>
-    </select>
-  </div>
+  <!-- ジャンル選択タブ -->
   <div id="genres">
     <button onclick="setGenre('すべて')">すべて</button>
   </div>
-  <div id="tag-filter">
-    <span>タグで絞り込み:</span>
-    <div id="tag-actions">
-      <button id="toggle-tags">▼ もっと見る</button>
-      <button id="clear-tags">タグをクリア</button>
-    </div>
-    <div id="tag-buttons"></div>
-  </div>
-  <div id="tab-buttons">
-    <button onclick="switchTab('articles')">📰 記事</button>
-    <button onclick="switchTab('thumbnails')">🖼️ 画像</button>
-  </div>
 
-
+  <!-- 左右分割 -->
   <div id="mainContent">
-    <div id="noResults" class="no-results-message hidden">
-      該当する記事がありません。
+    <!-- 左3分の2 -->
+    <div id="leftColumn">
+      <div id="search-box">
+        <input type="text" id="searchInput" placeholder="キーワードで検索" oninput="applyFilters()" />
+        <select id="sortSelect" onchange="applyFilters()">
+          <option value="relevance">適合度順</option>
+          <option value="dateDesc">新しい順</option>
+          <option value="dateAsc">古い順</option>
+        </select>
+      </div>
+
+      <div id="tab-buttons">
+        <button onclick="switchTab('articles')">📰 記事</button>
+        <button onclick="switchTab('thumbnails')">🖼️ 画像</button>
+      </div>
+
+      <div id="noResults" class="no-results-message hidden">該当する記事がありません。</div>
+      <div id="news" class="tab-content">読み込み中...</div>
     </div>
-    <div id="news" class="tab-content">読み込み中...</div>
-    <h2>🖼️ サムネイル一覧</h2>
-    <div id="thumbnailGallery" class="tab-content">
-      <!-- ここに画像を追加 -->
+
+    <!-- 右3分の1 -->
+    <div id="rightColumn">
+      <div id="tag-filter">
+        <span>タグで絞り込み:</span>
+        <div id="tag-actions">
+          <button id="toggle-tags">▼ もっと見る</button>
+          <button id="clear-tags">タグをクリア</button>
+        </div>
+        <div id="tag-buttons"></div>
+      </div>
+
+      <h2>🖼️ サムネイル一覧</h2>
+      <div id="thumbnailGallery" class="tab-content"></div>
     </div>
   </div>
 
+  <!-- 上に戻るボタン -->
   <button id="scrollToTop">⬆️</button>
+
   <!-- モーダル -->
   <div id="imageModal" class="modal hidden">
     <button id="closeBtn" class="close-btn">&times;</button>
     <img id="modalImg" src="" loading="lazy" />
-
   </div>
 
   <script src="script.js"></script>
-
 </body>
-</html>
