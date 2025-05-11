@@ -383,6 +383,44 @@ document.addEventListener("DOMContentLoaded", () => {
   checkInitialScrollability(); // ← 初期表示が少ない時に対応
 });
 
+const genres = document.getElementById("genres");
+const leftArrow = document.querySelector(".scroll-indicator.left");
+const rightArrow = document.querySelector(".scroll-indicator.right");
+
+function updateArrowVisibility() {
+  const maxScroll = genres.scrollWidth - genres.clientWidth;
+  leftArrow.style.display = genres.scrollLeft > 0 ? "block" : "none";
+  rightArrow.style.display = genres.scrollLeft < maxScroll - 1 ? "block" : "none";
+}
+
+leftArrow.onclick = () => {
+  genres.scrollBy({ left: -150, behavior: "smooth" });
+};
+rightArrow.onclick = () => {
+  genres.scrollBy({ left: 150, behavior: "smooth" });
+};
+
+genres.addEventListener("scroll", updateArrowVisibility);
+window.addEventListener("resize", updateArrowVisibility);
+window.addEventListener("load", updateArrowVisibility);
+
+// 左クリックドラッグによるスクロール（PCサポート）
+let isDragging = false, startX, scrollLeft;
+genres.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  startX = e.pageX - genres.offsetLeft;
+  scrollLeft = genres.scrollLeft;
+});
+document.addEventListener("mouseup", () => isDragging = false);
+genres.addEventListener("mouseleave", () => isDragging = false);
+genres.addEventListener("mousemove", (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const x = e.pageX - genres.offsetLeft;
+  const walk = (x - startX) * 1.5; // スクロール速度調整
+  genres.scrollLeft = scrollLeft - walk;
+});
+
 function renderThumbnailPage() {
   const gallery = document.getElementById("thumbnailGallery");
   const start = thumbnailPage * thumbnailsPerPage;
