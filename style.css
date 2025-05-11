@@ -464,10 +464,8 @@ img.thumbnail:hover {
     flex-direction: row;
   }
   #news {
+    display: block;
     flex: 3;
-  }
-  #thumbnailGallery {
-/*    flex: 2;*/
   }
   #mainContent.active-articles #news {
     display: block;
