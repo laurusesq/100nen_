@@ -120,7 +120,6 @@
 #genres button:hover {
   color: #1b2b4f;
   border-bottom-color: #5a6b8c;
-  font-weight: 600;
 }
 #genres button.active {
   background-color: #ff9800;
