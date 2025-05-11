@@ -647,41 +647,27 @@ function closeModal() {
 }
 
 function switchTab(tab) {
-  const news = document.getElementById("news");
-  const gallery = document.getElementById("thumbnailGallery");
-  const tagFilter = document.getElementById("tag-filter");
-  const thumbnailTitle = document.querySelector("h2"); // 🖼️ サムネイル一覧
-
-  const isMobile = window.innerWidth < 800;
-
-  // タブのアクティブ状態を切り替え
+  const main = document.getElementById("mainContent");
   const tabButtons = document.querySelectorAll("#tab-buttons button");
+
+  // タブボタンのアクティブ状態を切り替え
   tabButtons.forEach(btn => btn.classList.remove("active"));
-  const currentButton = Array.from(tabButtons).find(btn => btn.textContent.includes(tab === "articles" ? "記事" : tab === "tags" ? "タグ" : "画像"));
+  const currentButton = Array.from(tabButtons).find(btn =>
+    btn.textContent.includes(tab === "articles" ? "記事" :
+                             tab === "tags" ? "タグ" : "画像")
+  );
   if (currentButton) currentButton.classList.add("active");
 
-  if (isMobile) {
-    // スマホの場合は全部非表示にしてから、必要なものだけ表示
-    news.style.display = "none";
-    tagFilter.style.display = "none";
-    gallery.style.display = "none";
-    if (thumbnailTitle) thumbnailTitle.style.display = "none";
+  // mainContent に付いている active-xxx クラスを全部外す
+  main.classList.remove("active-articles", "active-tags", "active-thumbnails");
 
-    if (tab === "articles") {
-      news.style.display = "";
-    } else if (tab === "tags") {
-      tagFilter.style.display = "";
-    } else if (tab === "thumbnails") {
-      gallery.style.display = "";
-      if (thumbnailTitle) thumbnailTitle.style.display = "";
-    }
-
-  } else {
-    // PC時は全部表示
-    news.style.display = "";
-    tagFilter.style.display = "";
-    gallery.style.display = "";
-    if (thumbnailTitle) thumbnailTitle.style.display = "";
+  // 該当のクラスだけ追加
+  if (tab === "articles") {
+    main.classList.add("active-articles");
+  } else if (tab === "tags") {
+    main.classList.add("active-tags");
+  } else if (tab === "thumbnails") {
+    main.classList.add("active-thumbnails");
   }
 }
 
