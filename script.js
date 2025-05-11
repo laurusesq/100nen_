@@ -650,39 +650,31 @@ function switchTab(tab) {
   const news = document.getElementById("news");
   const gallery = document.getElementById("thumbnailGallery");
   const tagFilter = document.getElementById("tag-filter");
-  const tabButtons = document.querySelectorAll("#tab-buttons button");
-  const main = document.getElementById("mainContent");
-  const thumbnailTitle = document.querySelector("h2");
+  const thumbnailTitle = document.querySelector("h2"); // 🖼️ サムネイル一覧
 
   const isMobile = window.innerWidth < 800;
 
-  // ボタンのactiveクラス切り替え
-  tabButtons.forEach(btn => btn.classList.remove("active"));
-  const activeBtn = document.querySelector(`#tab-buttons .${tab}-btn`);
-  if (activeBtn) activeBtn.classList.add("active");
-
-  // モバイル表示切り替え
   if (isMobile) {
-    // すべて非表示
+    // スマホの場合は全部非表示にしてから、必要なものだけ表示
     news.style.display = "none";
-    gallery.style.display = "none";
     tagFilter.style.display = "none";
+    gallery.style.display = "none";
     if (thumbnailTitle) thumbnailTitle.style.display = "none";
 
-    // 該当タブのみ表示
     if (tab === "articles") {
-      news.style.display = "block";
+      news.style.display = "";
     } else if (tab === "tags") {
-      tagFilter.style.display = "block";
+      tagFilter.style.display = "";
     } else if (tab === "thumbnails") {
-      gallery.style.display = "block";
-      if (thumbnailTitle) thumbnailTitle.style.display = "block";
+      gallery.style.display = "";
+      if (thumbnailTitle) thumbnailTitle.style.display = "";
     }
+
   } else {
-    // PC時は常にすべて表示
+    // PC時は全部表示
     news.style.display = "";
-    gallery.style.display = "";
     tagFilter.style.display = "";
+    gallery.style.display = "";
     if (thumbnailTitle) thumbnailTitle.style.display = "";
   }
 }
