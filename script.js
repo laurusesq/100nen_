@@ -654,6 +654,12 @@ function switchTab(tab) {
 
   const isMobile = window.innerWidth < 800;
 
+  // タブのアクティブ状態を切り替え
+  const tabButtons = document.querySelectorAll("#tab-buttons button");
+  tabButtons.forEach(btn => btn.classList.remove("active"));
+  const currentButton = Array.from(tabButtons).find(btn => btn.textContent.includes(tab === "articles" ? "記事" : tab === "tags" ? "タグ" : "画像"));
+  if (currentButton) currentButton.classList.add("active");
+
   if (isMobile) {
     // スマホの場合は全部非表示にしてから、必要なものだけ表示
     news.style.display = "none";
