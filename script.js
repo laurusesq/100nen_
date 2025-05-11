@@ -654,7 +654,7 @@ function switchTab(tab) {
   tabButtons.forEach(btn => btn.classList.remove("active"));
   const currentButton = Array.from(tabButtons).find(btn =>
     btn.textContent.includes(tab === "articles" ? "記事" :
-                             tab === "tags" ? "タグ" : "画像")
+                             tab === "tags" ? "タグ" : "サムネイル")
   );
   if (currentButton) currentButton.classList.add("active");
 
