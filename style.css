@@ -99,6 +99,69 @@
   box-shadow: 0 0 0 2px rgba(0, 87, 163, 0.1);
 }
 
+.genre-scroll-wrapper {
+  position: relative;
+}
+
+#genres {
+  display: flex;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+  gap: 4px;
+}
+
+/* スクロールバー非表示（必要なら） */
+#genres::-webkit-scrollbar {
+  display: none;
+}
+#genres {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;    /* Firefox */
+}
+
+/* グラデーション影（左右） */
+.genre-scroll-wrapper::before,
+.genre-scroll-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 30px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.genre-scroll-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, white 0%, transparent 100%);
+}
+.genre-scroll-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, white 0%, transparent 100%);
+}
+
+/* ◀▶ボタン */
+.scroll-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #666;
+  background: rgba(255,255,255,0.7);
+  padding: 4px 8px;
+  cursor: pointer;
+  z-index: 2;
+  user-select: none;
+}
+.scroll-indicator.left {
+  left: 0;
+}
+.scroll-indicator.right {
+  right: 0;
+}
+
 #genres button {
   padding: 10px 14px;
   margin: 0;
@@ -455,6 +518,17 @@ img.thumbnail:hover {
 
 /* PC用のレイアウト調整 */
 @media (min-width: 800px) {
+  #genres {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .genre-scroll-wrapper::before,
+  .genre-scroll-wrapper::after,
+  .scroll-indicator {
+    display: none;
+  }
+
   #mainContent {
     flex-direction: row;
   }
