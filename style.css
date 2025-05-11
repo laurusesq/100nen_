@@ -69,6 +69,9 @@
   cursor: pointer;
   transition: border-color 0.2s ease;
 }
+#sortSelect:focus {
+  border-color: #888;
+}
 
 #genres {
   display: flex;
