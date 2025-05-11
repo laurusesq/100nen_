@@ -649,35 +649,43 @@ function closeModal() {
 function switchTab(tab) {
   const news = document.getElementById("news");
   const gallery = document.getElementById("thumbnailGallery");
+  const tagFilter = document.getElementById("tag-filter");
+  const tabButtons = document.querySelectorAll("#tab-buttons button");
+  const main = document.getElementById("mainContent");
   const thumbnailTitle = document.querySelector("h2");
 
   const isMobile = window.innerWidth < 800;
 
-  if (tab === "articles") {
-    news.classList.add("active");
-    gallery.classList.remove("active");
+  // ボタンのactiveクラス切り替え
+  tabButtons.forEach(btn => btn.classList.remove("active"));
+  const activeBtn = document.querySelector(`#tab-buttons .${tab}-btn`);
+  if (activeBtn) activeBtn.classList.add("active");
 
-    if (isMobile) {
-      if (thumbnailTitle) thumbnailTitle.style.display = "none";
-      if (gallery) gallery.style.display = "none";
-    } else {
-      if (thumbnailTitle) thumbnailTitle.style.display = "";
-      if (gallery) gallery.style.display = "";
+  // モバイル表示切り替え
+  if (isMobile) {
+    // すべて非表示
+    news.style.display = "none";
+    gallery.style.display = "none";
+    tagFilter.style.display = "none";
+    if (thumbnailTitle) thumbnailTitle.style.display = "none";
+
+    // 該当タブのみ表示
+    if (tab === "articles") {
+      news.style.display = "block";
+    } else if (tab === "tags") {
+      tagFilter.style.display = "block";
+    } else if (tab === "thumbnails") {
+      gallery.style.display = "block";
+      if (thumbnailTitle) thumbnailTitle.style.display = "block";
     }
   } else {
-    news.classList.remove("active");
-    gallery.classList.add("active");
-
-    if (isMobile) {
-      if (thumbnailTitle) thumbnailTitle.style.display = "";
-      if (gallery) gallery.style.display = "";
-    } else {
-      if (thumbnailTitle) thumbnailTitle.style.display = "";
-      if (gallery) gallery.style.display = "";
-    }
+    // PC時は常にすべて表示
+    news.style.display = "";
+    gallery.style.display = "";
+    tagFilter.style.display = "";
+    if (thumbnailTitle) thumbnailTitle.style.display = "";
   }
 }
-
 
 window.onresize = function () {
   // タブの状態を取得（articles or gallery）
