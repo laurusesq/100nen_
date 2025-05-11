@@ -463,5 +463,41 @@ img.thumbnail:hover {
   }
   #tab-buttons {
     display: flex;
+    justify-content: space-around;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #ddd;
+  }
+
+  #tab-buttons button {
+    flex: 1;
+    padding: 10px;
+    font-size: 14px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    color: #444;
+  }
+
+  #tab-buttons button.active {
+    color: #0a3d62;
+    border-bottom: 3px solid #0a3d62;
+    font-weight: 600;
+  }
+
+  /* 表示切替 */
+  #news, #tag-filter, #thumbnailGallery {
+    display: none;
+  }
+
+  #mainContent.active-articles #news,
+  #mainContent.active-tags #tag-filter,
+  #mainContent.active-thumbnails #thumbnailGallery {
+    display: block;
+  }
+
+  h2 {
+    display: none;
   }
 }
+
