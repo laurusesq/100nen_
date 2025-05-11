@@ -18,20 +18,33 @@
   gap: 16px;
 }
 
+/* タブボタンの共通デザイン */
 #tab-buttons {
-  display: none;
-  margin-bottom: 10px;
-  justify-content: center;
-  gap: 10px;
+  display: none; /* デフォルトでは非表示（PC用） */
+  justify-content: space-around;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #ddd;
 }
+
 #tab-buttons button {
-  padding: 6px 12px;
+  flex: 1;
+  padding: 10px 0;
   border: none;
-  border-radius: 6px;
-  background: #d8d8d8;
+  background: none;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
   cursor: pointer;
-  font-family: 'Georgia', serif;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
 }
+
+#tab-buttons button.active {
+  color: #0a3d62;
+  border-bottom: 3px solid #0a3d62;
+  font-weight: 600;
+}
+
 .tab-content {
   display: none;
 }
@@ -456,6 +469,8 @@ img.thumbnail:hover {
   }
 }
 
+
+/* スマホ時のみ表示 */
 @media (max-width: 799px) {
   .body {
     font-size: 14px;
