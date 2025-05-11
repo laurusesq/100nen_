@@ -675,11 +675,18 @@ window.onresize = function () {
   const main = document.getElementById("mainContent");
 
   if (window.innerWidth >= 800) {
-    // PC表示に戻ったらスマホ用クラスを削除（すべて表示される前提）
+    // PC表示に戻ったらスマホ用のタブ状態をリセット
     main.classList.remove("active-articles", "active-tags", "active-thumbnails");
   } else {
-    // スマホ表示では現在のタブを維持して再描画
-    if (main.classList.contains("active-articles")) {
+    // スマホ表示になったとき、アクティブタブがなければデフォルトで articles を選択
+    if (
+      !main.classList.contains("active-articles") &&
+      !main.classList.contains("active-tags") &&
+      !main.classList.contains("active-thumbnails")
+    ) {
+      main.classList.add("active-articles");
+      switchTab("articles");
+    } else if (main.classList.contains("active-articles")) {
       switchTab("articles");
     } else if (main.classList.contains("active-tags")) {
       switchTab("tags");
