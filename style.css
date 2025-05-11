@@ -344,24 +344,23 @@
 }
 
 body {
-  background-color: #fdf8f0;
-  font-family: 'IBM Plex Sans', 'Courier New', sans-serif;
-  color: #2f3640;
-  line-height: 1.7;
+  background-color: #f9f9f9;
+  color: #333;
+  font-family: "Noto Sans JP", sans-serif;
+  line-height: 1.8;
 }
+
 .title {
+  font-family: "Noto Serif JP", serif;
   font-size: 24px;
-  font-weight: bold;
-  font-family: 'Georgia', serif;
-  color: #222;
+  color: #1a237e;
   margin-bottom: 0.5em;
 }
 .date {
   font-size: 0.85rem;
   color: #666;
-  margin-bottom: 0.5rem;
   text-align: right;
-  font-family: 'Georgia', serif;
+  font-family: "Noto Sans JP", sans-serif;
 }
 .article-body {
   font-size: 16px;
@@ -381,31 +380,28 @@ body {
   text-indent: 1em;
   margin-bottom: 1.2em;
 }
+
 .genre {
-  background-color: #e1b12c;
-  color: white;
-  border-radius: 20px;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
+  background-color: #ffca28;
+  color: #333;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
   font-weight: bold;
-  display: inline-block;
-  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
 }
+
 .article {
-  background-color: #ffffff;
+  background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.05);
-  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 2rem;
   margin-bottom: 2rem;
-  border: 1px solid transparent;
-  transition: all 0.3s ease;
-  background-color: white;
+  transition: box-shadow 0.3s ease;
 }
 .article:hover {
-  background-color: #fafafa;
-  border-color: #ddd;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
+
 
 #thumbnailGallery {
   display: grid;
