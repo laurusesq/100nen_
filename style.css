@@ -438,25 +438,27 @@ body {
 
 #thumbnailGallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  margin: 30px 0;
-  align-self: flex-start;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* スマホ対応 */
+  gap: 8px;
+  margin: 16px 0; /* 余白を減らす */
 }
+
 img.thumbnail {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: zoom-in;
 }
+
 img.thumbnail:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* PC用のレイアウト調整 */
 @media (min-width: 800px) {
   #mainContent {
     flex-direction: row;
@@ -468,7 +470,6 @@ img.thumbnail:hover {
     flex: 2;
   }
 }
-
 
 /* スマホ時のみ表示 */
 @media (max-width: 799px) {
