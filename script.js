@@ -672,11 +672,15 @@ function switchTab(tab) {
 }
 
 window.onresize = function () {
-  // タブの状態を取得（articles or gallery）
-  const currentTab = document.getElementById("news").classList.contains("active") ? "articles" : "gallery";
+  const main = document.getElementById("mainContent");
 
-  // 再度 switchTab を呼び出して、表示を最適化
-  switchTab(currentTab);
+  if (main.classList.contains("active-articles")) {
+    switchTab("articles");
+  } else if (main.classList.contains("active-tags")) {
+    switchTab("tags");
+  } else if (main.classList.contains("active-thumbnails")) {
+    switchTab("thumbnails");
+  }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
