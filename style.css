@@ -105,11 +105,9 @@
 
 #genres {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* 折り返さない */
   overflow-x: auto;
-  scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
   gap: 4px;
 }
 
