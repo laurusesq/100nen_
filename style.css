@@ -513,10 +513,16 @@ img.thumbnail:hover {
     display: none;
   }
 
+  
   #mainContent.active-articles #news,
-  #mainContent.active-tags #tag-filter,
-  #mainContent.active-thumbnails #thumbnailGallery {
+  #mainContent.active-tags #tag-filter {
     display: block;
+  }
+
+  #mainContent.active-thumbnails #thumbnailGallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
   }
 
   h2 {
