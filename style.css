@@ -479,13 +479,29 @@ img.thumbnail:hover {
     font-size: 14px;
     line-height: 1.6;
   }
+  #genres {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch; /* iOSスムーズスクロール対応 */
+    scrollbar-width: none; /* Firefox用: スクロールバー非表示（任意） */
+  }
+
+  #genres::-webkit-scrollbar {
+    display: none; /* Chrome, Safariでスクロールバー非表示（任意） */
+  }
+
+  #genres button {
+    display: inline-block;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
   #tab-buttons {
     display: flex;
     justify-content: space-around;
     margin-bottom: 16px;
     border-bottom: 2px solid #ddd;
   }
-
   #tab-buttons button {
     flex: 1;
     padding: 10px;
@@ -496,7 +512,6 @@ img.thumbnail:hover {
     cursor: pointer;
     color: #444;
   }
-
   #tab-buttons button.active {
     color: #0a3d62;
     border-bottom: 3px solid #0a3d62;
@@ -507,19 +522,15 @@ img.thumbnail:hover {
   #news, #tag-filter, #thumbnailGallery {
     display: none;
   }
-
-  
   #mainContent.active-articles #news,
   #mainContent.active-tags #tag-filter {
     display: block;
   }
-
   #mainContent.active-thumbnails #thumbnailGallery {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 8px;
   }
-
   h2 {
     display: none;
   }
