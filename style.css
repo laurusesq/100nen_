@@ -59,11 +59,11 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 24px;
-  background: #f7fafc;
+  background: linear-gradient(135deg, #f1f5f9 0%, #f8fafc 100%);
   padding: 20px 24px;
   border: 1px solid #cbd5e0;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   top: 0;
   z-index: 999;
 }
@@ -191,9 +191,10 @@
 }
 
 #genres button.active {
-  background-color: #1a365d;
+  background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
   color: white;
   border-bottom-color: #1a365d;
+  box-shadow: 0 2px 6px rgba(26, 54, 93, 0.3);
 }
 
 #scrollSentinel {
@@ -314,18 +315,21 @@
   font-weight: 700;
 }
 .button {
-  background-color: #1a365d;
+  background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
   color: white;
   padding: 0.6rem 1.2rem;
-  border-radius: 4px;
+  border-radius: 6px;
   text-decoration: none;
   display: inline-block;
   font-weight: 600;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
   font-family: 'Times New Roman', serif;
+  box-shadow: 0 2px 6px rgba(26, 54, 93, 0.3);
 }
 .button:hover {
-  background-color: #2c5282;
+  background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.4);
 }
 #tag-actions {
   margin: 12px 0;
@@ -351,10 +355,11 @@
   background-color: #f7fafc;
 }
 .tag-button.active {
-  background: #1a365d;
+  background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
   color: white;
   border-color: #1a365d;
   font-weight: 600;
+  box-shadow: 0 2px 6px rgba(26, 54, 93, 0.3);
 }
 
 #toggle-tags {
@@ -363,18 +368,20 @@
   justify-content: center;
   margin: 2px;
   padding: 6px 12px;
-  background-color: #1a365d;
+  background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
   color: white;
   font-weight: 600;
   font-size: 13px;
   border: 1px solid #1a365d;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   font-family: 'Times New Roman', serif;
+  box-shadow: 0 2px 6px rgba(26, 54, 93, 0.3);
 }
 #toggle-tags:hover {
-  background-color: #2c5282;
+  background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
+  transform: translateY(-1px);
 }
 #clear-tags {
   margin: 2px;
@@ -449,7 +456,7 @@
 }
 
 body {
-  background-color: #ffffff;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
   font-family: 'Times New Roman', serif;
   color: #1a202c;
   line-height: 1.6;
@@ -490,28 +497,66 @@ body {
   margin-bottom: 1em;
 }
 .genre {
-  background-color: #1a365d;
+  background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
   color: white;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 0.3rem 0.8rem;
   font-size: 0.8rem;
   font-weight: 600;
   display: inline-block;
   margin-bottom: 0.6rem;
   font-family: 'Times New Roman', serif;
+  box-shadow: 0 2px 4px rgba(26, 54, 93, 0.2);
+}
+
+/* ジャンル別カラー */
+.genre[data-genre="政治"] {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+}
+.genre[data-genre="経済"] {
+  background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
+}
+.genre[data-genre="社会"] {
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+}
+.genre[data-genre="国際"] {
+  background: linear-gradient(135deg, #7c2d12 0%, #dc2626 100%);
+}
+.genre[data-genre="文化"] {
+  background: linear-gradient(135deg, #6b21a8 0%, #a855f7 100%);
+}
+.genre[data-genre="スポーツ"] {
+  background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%);
 }
 .article {
-  background-color: #ffffff;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   padding: 2rem;
   margin-bottom: 2rem;
   border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 .article:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
   border-color: #cbd5e0;
+  transform: translateY(-2px);
+}
+.article::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #1e3a8a, #22c55e, #f97316, #dc2626, #a855f7);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.article:hover::before {
+  opacity: 1;
 }
 
 #thumbnailGallery {
