@@ -15,9 +15,11 @@
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
 }
 
+/* === ダイナミックタイプ対応のベース指定 === */
 body {
-  background: var(--background-main);
+  font: -apple-system-body;
   font-family: var(--font-family);
+  background: var(--background-main);
   color: var(--text-primary);
   line-height: 1.7;
   margin: 0;
@@ -703,4 +705,22 @@ img.thumbnail:hover {
   .title {
     font-size: 1.25rem; /* 約20px */
   }
+}
+
+/* フォントサイズをデバイス設定に委ねる（inherit） */
+.title,
+.article-body,
+.date,
+.tag-button,
+#searchInput,
+#sortSelect,
+#tab-buttons button,
+#genres button,
+.button,
+#clear-tags,
+#toggle-tags,
+.clickable-tag,
+.no-results-message,
+#updateNotice {
+  font-size: inherit;
 }
