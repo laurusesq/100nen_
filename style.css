@@ -298,12 +298,6 @@
 .close-btn:hover {
   transform: scale(1.2);
 }
-#genres button.active {
-  background-color: #ff9800;
-  color: white;
-  font-weight: bold;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
 .button {
   background-color: #85dcb0;
   color: #2f3640;
