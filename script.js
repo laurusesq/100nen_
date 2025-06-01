@@ -248,6 +248,23 @@ async function loadMore() {
 
     const tags = await buildTagHTML(rawTags);
 
+    const bodyHtml = (article["本文"] || "")
+      .split(/\n+/)
+      .map(paragraph => `<p>&emsp;${paragraph.trim()}</p>`)
+      .join("");
+    
+    container.innerHTML += `
+      <div class="article">
+        <div class="genre">${article["ジャンル"]}</div>
+        <div class="title">${article["タイトル"]}</div>
+        <div class="date">${article["日付"]}</div>
+        ${article["画像URL"] ? `<img src="${article["画像URL"]}" loading="lazy" class="article-image" onclick="openModal('${article["画像URL"]}')">` : ""}
+        <div class="article-body">${bodyHtml}</div>
+        <div class="tags">${tags}</div>
+      </div>
+    `;
+
+/*    
     container.innerHTML += `
       <div class="article">
         <div class="genre">${article["ジャンル"]}</div>
@@ -258,6 +275,7 @@ async function loadMore() {
         <div class="tags">${tags}</div>
       </div>
     `;
+*/
   }
 
   // タグクリックで絞り込み
