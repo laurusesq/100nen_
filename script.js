@@ -254,7 +254,7 @@ async function loadMore() {
         <div class="title">${article["タイトル"]}</div>
         <div class="date">${article["日付"]}</div>
         ${article["画像URL"] ? `<img src="${article["画像URL"]}" loading="lazy" class="article-image" onclick="openModal('${article["画像URL"]}')">` : ""}
-        <div class="article-body">&emsp;${(article["本文"] || "").replace(/\n/g, "<br>&emsp;")}</div>
+        <div class="article-body">&emsp;${(article["本文"] || "").replace(/\n/g, "<br><br>&emsp;")}</div>
         <div class="tags">${tags}</div>
       </div>
     `;
