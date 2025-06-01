@@ -453,7 +453,7 @@ body {
   white-space: normal;
   color: #333;
 }
-.article-body br {
+.article-body br:after {
   margin-bottom: 1.5em;
   display: block;
   content: "";
