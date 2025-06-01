@@ -453,10 +453,13 @@ body {
   white-space: normal;
   color: #333;
 }
+
 .article-body p {
+  text-align: justify;
   line-height: 1.8;
-  margin-bottom: 1.2em;
+  margin-bottom: 1.5em;
 }
+
 .genre {
   background-color: #004c99;
   color: white;
