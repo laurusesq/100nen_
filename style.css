@@ -171,7 +171,6 @@
   background: transparent;
   border: none;
   border-bottom: 3px solid transparent;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-size: 15px;
   color: #334;
   cursor: pointer;
@@ -429,7 +428,7 @@
 
 body {
   background-color: #ffffff;
-  font-family: 'Helvetica Neue', 'Segoe UI', sans-serif;
+  font-family: 'Inter', 'Helvetica Neue', 'Segoe UI', sans-serif;
   color: #222; /* 濃いグレーで読みやすく */
   line-height: 1.7;
 }
@@ -437,7 +436,6 @@ body {
 .title {
   font-size: 24px;
   font-weight: bold;
-  font-family: 'Georgia', serif;
   color: #111;
   margin-bottom: 0.5em;
 }
@@ -446,11 +444,9 @@ body {
   color: #888;
   margin-bottom: 0.5rem;
   text-align: right;
-  font-family: 'Georgia', serif;
 }
 .article-body {
   font-size: 16px;
-  font-family: 'Georgia', serif;
   line-height: 1.8;
   margin-top: 0.5em;
   margin-bottom: 1rem;
