@@ -4,6 +4,8 @@ if ('serviceWorker' in navigator) {
 
 const API_URL = 'https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles';
 const BATCH = 12;
+const CACHE_KEY = 'articlesCacheV1';
+const CACHE_MAX_AGE_MS = 1000 * 60 * 10;
 
 const state = {
   all: [],
@@ -45,53 +47,118 @@ init();
 async function init() {
   bindEvents();
   hydrateSessionUI();
+  setupInfiniteScroll();
+
+  const cached = loadCache();
+  if (cached) {
+    applyIncomingRows(cached.rows, { source: 'cache' });
+    if (!cached.isFresh) {
+      fetchAndApplyLatest();
+    }
+    return;
+  }
+
+  await fetchAndApplyLatest();
+}
+
+async function fetchAndApplyLatest() {
   try {
     const res = await fetch(API_URL);
     if (!res.ok) throw new Error('記事取得に失敗');
     const rows = await res.json();
-    state.all = rows.map((r, i) => normalizeArticle(r, i));
-    notifyNewArticles();
-    renderGenres();
-    renderTagFilters();
-    applyFilters(true);
+    saveCache(rows);
+    applyIncomingRows(rows, { source: 'network' });
   } catch (error) {
-    el.articleList.innerHTML = `<p class="card">記事の読み込みに失敗しました。時間をおいて再試行してください。</p>`;
+    if (!state.all.length) {
+      el.articleList.innerHTML = '<p class="card">記事の読み込みに失敗しました。時間をおいて再試行してください。</p>';
+    }
     console.error(error);
   }
 }
 
+function applyIncomingRows(rows, { source }) {
+  state.all = rows.map((r, i) => normalizeArticle(r, i));
+  notifyNewArticles();
+  renderGenres();
+  renderTagFilters();
+  applyFilters(true);
+
+  if (source === 'cache') {
+    el.newNotice.textContent = '高速表示のためキャッシュを利用中。最新データを確認しています…';
+    el.newNotice.classList.remove('hidden');
+  } else if (source === 'network' && el.newNotice.textContent.includes('キャッシュ')) {
+    el.newNotice.classList.add('hidden');
+    el.newNotice.textContent = '';
+  }
+}
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.rows) || !parsed.savedAt) return null;
+    return {
+      rows: parsed.rows,
+      isFresh: Date.now() - parsed.savedAt < CACHE_MAX_AGE_MS
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveCache(rows) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ rows, savedAt: Date.now() }));
+  } catch {
+    // quota超過時は無視
+  }
+}
+
 function normalizeArticle(row, index) {
-  const date = row['日付'] || row['date'] || '';
-  const title = row['タイトル'] || row['title'] || `記事${index + 1}`;
-  const baseTags = ((row['タグ'] || row['tags'] || '').split(',').map(t => t.trim()).filter(Boolean));
-  const id = String(row['ID'] || row.id || `${date}-${title}-${index}`);
+  const date = row['日付'] || row.date || '';
+  const title = row['タイトル'] || row.title || `記事${index + 1}`;
+  const body = row['本文'] || row.body || '';
+  const baseTags = (row['タグ'] || row.tags || '').split(',').map((t) => t.trim()).filter(Boolean);
+  const id = String(row.ID || row.id || `${date}-${title}-${index}`);
+
   return {
     id,
     title,
-    body: row['本文'] || row['body'] || '',
+    body,
     date,
-    genre: row['ジャンル'] || row['genre'] || '未分類',
-    image: row['画像URL'] || row['imageUrl'] || '',
-    tags: state.tagOverrides[id] || baseTags
+    genre: row['ジャンル'] || row.genre || '未分類',
+    image: row['画像URL'] || row.imageUrl || '',
+    tags: state.tagOverrides[id] || baseTags,
+    searchText: `${title} ${body}`.toLowerCase(),
+    normalizedTitle: normalizeJapanese(title)
   };
 }
 
 function bindEvents() {
+  let timer;
   el.searchInput.addEventListener('input', () => {
-    state.query = el.searchInput.value.trim().toLowerCase();
-    applyFilters(true);
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      state.query = normalizeJapanese(el.searchInput.value.trim().toLowerCase());
+      applyFilters(true);
+    }, 220);
   });
+
   el.sortSelect.addEventListener('change', () => {
     state.sort = el.sortSelect.value;
     applyFilters(true);
   });
+
   el.clearTagsBtn.addEventListener('click', () => {
     state.selectedTags.clear();
     renderTagFilters();
     applyFilters(true);
   });
+
   el.loginBtn.addEventListener('click', () => el.loginDialog.showModal());
   el.logoutBtn.addEventListener('click', logout);
+
   el.loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = el.usernameInput.value.trim();
@@ -102,7 +169,6 @@ function bindEvents() {
     hydrateSessionUI();
     applyFilters(true);
   });
-  setupInfiniteScroll();
 }
 
 function hydrateSessionUI() {
@@ -124,6 +190,7 @@ function renderGenres() {
     return acc;
   }, {});
   const genres = ['すべて', ...Object.keys(counts).sort((a, b) => counts[b] - counts[a])];
+
   el.genres.innerHTML = '';
   genres.forEach((g) => {
     const btn = document.createElement('button');
@@ -139,8 +206,9 @@ function renderGenres() {
 }
 
 function renderTagFilters() {
-  const tags = [...new Set(state.all.flatMap(a => a.tags))].sort((a, b) => a.localeCompare(b, 'ja'));
+  const tags = [...new Set(state.all.flatMap((a) => a.tags))].sort((a, b) => a.localeCompare(b, 'ja'));
   el.tagList.innerHTML = '';
+
   tags.forEach((t) => {
     const btn = document.createElement('button');
     btn.className = `tag-filter-btn ${state.selectedTags.has(t) ? 'active' : ''}`;
@@ -156,22 +224,26 @@ function renderTagFilters() {
 }
 
 function applyFilters(resetPage = false) {
-  let rows = [...state.all];
+  let rows = state.all;
 
-  if (state.genre !== 'すべて') rows = rows.filter(r => r.genre === state.genre);
+  if (state.genre !== 'すべて') rows = rows.filter((r) => r.genre === state.genre);
+
   if (state.selectedTags.size) {
     const required = [...state.selectedTags];
-    rows = rows.filter(r => required.every(tag => r.tags.includes(tag)));
+    rows = rows.filter((r) => required.every((tag) => r.tags.includes(tag)));
   }
 
   if (state.query) {
     rows = rows.filter((r) => {
-      const text = `${r.title} ${r.body}`.toLowerCase();
-      return text.includes(state.query) || fuzzyMatch(r.title.toLowerCase(), state.query);
+      if (r.searchText.includes(state.query)) return true;
+      return softFuzzyMatch(r.normalizedTitle, state.query);
     });
   }
 
-  rows.sort((a, b) => state.sort === 'dateAsc' ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date));
+  rows = [...rows].sort((a, b) =>
+    state.sort === 'dateAsc' ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)
+  );
+
   state.visible = rows;
 
   if (resetPage) {
@@ -179,6 +251,7 @@ function applyFilters(resetPage = false) {
     el.articleList.innerHTML = '';
     appendNextBatch();
   }
+
   el.emptyState.classList.toggle('hidden', state.visible.length > 0);
   renderFavoritePanel();
 }
@@ -188,6 +261,7 @@ function appendNextBatch() {
   const end = start + BATCH;
   const chunk = state.visible.slice(start, end);
   if (!chunk.length) return;
+
   const frag = document.createDocumentFragment();
   chunk.forEach((a) => frag.appendChild(renderArticle(a)));
   el.articleList.appendChild(frag);
@@ -212,7 +286,7 @@ function renderArticle(article) {
     </div>
     ${article.image ? `<img class="article-image" src="${escapeAttr(article.image)}" loading="lazy" alt="${escapeAttr(article.title)}">` : ''}
     <div class="article-body">
-      ${article.body.split(/\n+/).map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+      ${article.body.split(/\n+/).map((p) => `<p>${escapeHtml(p)}</p>`).join('')}
       <div class="actions">
         <button class="icon-btn fav ${fav ? 'active' : ''}">${fav ? '★ お気に入り済み' : '☆ お気に入り'}</button>
         <button class="icon-btn read">既読にする</button>
@@ -249,6 +323,7 @@ function renderArticle(article) {
     card.querySelector('.edit-tags')?.addEventListener('click', () => editTags(article));
     card.querySelector('.comment-form')?.addEventListener('submit', (e) => postComment(e, article.id));
   }
+
   renderComments(card, article.id);
   return card;
 }
@@ -256,7 +331,9 @@ function renderArticle(article) {
 function renderComments(card, articleId) {
   const list = card.querySelector('.comment-list');
   const comments = state.comments[articleId] || [];
-  list.innerHTML = comments.map((c) => `<li class="card"><strong>${escapeHtml(c.user)}</strong>: ${escapeHtml(c.text)}</li>`).join('');
+  list.innerHTML = comments
+    .map((c) => `<li class="card"><strong>${escapeHtml(c.user)}</strong>: ${escapeHtml(c.text)}</li>`)
+    .join('');
 }
 
 function postComment(event, articleId) {
@@ -264,6 +341,7 @@ function postComment(event, articleId) {
   const input = event.target.querySelector('input');
   const text = input.value.trim();
   if (!text || !state.user) return;
+
   const current = state.comments[articleId] || [];
   current.unshift({ user: state.user.name, text, at: Date.now() });
   state.comments[articleId] = current.slice(0, 20);
@@ -289,10 +367,12 @@ function markRead(articleId) {
 function editTags(article) {
   const next = prompt('タグをカンマ区切りで入力', article.tags.join(', '));
   if (next == null) return;
-  const tags = next.split(',').map(t => t.trim()).filter(Boolean);
+
+  const tags = next.split(',').map((t) => t.trim()).filter(Boolean);
   state.tagOverrides[article.id] = tags;
   localStorage.setItem('tagOverrides', JSON.stringify(state.tagOverrides));
-  state.all = state.all.map((a) => a.id === article.id ? { ...a, tags } : a);
+
+  state.all = state.all.map((a) => (a.id === article.id ? { ...a, tags } : a));
   renderTagFilters();
   applyFilters(true);
 }
@@ -304,53 +384,65 @@ function addPoints(points) {
 }
 
 function renderFavoritePanel() {
-  const favorites = state.all.filter(a => state.favorites.has(a.id)).slice(0, 20);
+  const favorites = state.all.filter((a) => state.favorites.has(a.id)).slice(0, 20);
   el.favoriteList.innerHTML = favorites.length
-    ? favorites.map((a) => `<li><button class="icon-btn jump" data-id="${escapeAttr(a.id)}">${escapeHtml(a.title)}</button></li>`).join('')
+    ? favorites
+        .map(
+          (a) => `<li><button class="icon-btn jump" data-id="${escapeAttr(a.id)}">${escapeHtml(a.title)}</button></li>`
+        )
+        .join('')
     : '<li>まだありません。</li>';
+
   el.favoriteList.querySelectorAll('.jump').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const item = document.querySelector('.title')?.closest('.article');
-      if (item) item.scrollIntoView({ behavior: 'smooth' });
+      const targetId = btn.getAttribute('data-id');
+      const target = [...document.querySelectorAll('.article .title')].find((t) =>
+        t.textContent?.includes(state.all.find((a) => a.id === targetId)?.title || '')
+      );
+      target?.closest('.article')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 }
 
 function setupInfiniteScroll() {
-  const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) appendNextBatch();
-  }, { rootMargin: '300px' });
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) appendNextBatch();
+    },
+    { rootMargin: '300px' }
+  );
   observer.observe(el.sentinel);
 }
 
 function notifyNewArticles() {
   const latest = [...state.all].sort((a, b) => b.date.localeCompare(a.date))[0]?.date;
   const lastSeen = localStorage.getItem('lastSeenDate') || '';
+
   if (latest && lastSeen && latest > lastSeen) {
-    const count = state.all.filter(a => a.date > lastSeen).length;
+    const count = state.all.filter((a) => a.date > lastSeen).length;
     el.newNotice.textContent = `新着記事 ${count} 件があります`;
     el.newNotice.classList.remove('hidden');
   }
+
   if (latest) localStorage.setItem('lastSeenDate', latest);
 }
 
-function fuzzyMatch(text, query) {
-  if (!query || query.length < 2) return false;
-  if (Math.abs(text.length - query.length) > 6) return false;
-  return levenshtein(text.slice(0, 60), query) <= Math.floor(query.length / 2);
+function normalizeJapanese(value) {
+  return value
+    .normalize('NFKC')
+    .replace(/[\u3041-\u3096]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) + 0x60));
 }
 
-function levenshtein(a, b) {
-  const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
-  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
-  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
-    }
+function softFuzzyMatch(text, query) {
+  if (!query || query.length < 2) return false;
+  if (text.includes(query)) return true;
+
+  let i = 0;
+  for (const ch of text) {
+    if (ch === query[i]) i += 1;
+    if (i === query.length) return true;
   }
-  return dp[a.length][b.length];
+  return false;
 }
 
 function escapeHtml(str) {
