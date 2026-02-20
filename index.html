@@ -1,84 +1,109 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
-  <title>百年前新聞オンライン</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="/icon.png" type="image/png">
-  <link rel="stylesheet" href="style.css">
-
-  <!-- iOS用: ホーム画面追加に必要 -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="百年前新聞">
-  <link rel="apple-touch-icon" href="/icon.png">
-
-  <!-- 通常のPWA向け -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#333333">
-</head>
-
-<body>
-  <!-- iOS案内と更新通知 -->
-  <div id="ios-tip">ホーム画面に追加するには、Safariで「共有ボタン → ホーム画面に追加」を選んでね！</div>
-  <div id="updateNotice">🔄 新しいバージョンがあります。タップで更新</div>
-
-  <!-- ジャンル選択タブ -->
-  <div class="genre-scroll-wrapper">
-    <div id="genres">
-      <button onclick="setGenre('すべて')">すべて</button>
-    </div>
-    <div class="scroll-indicator left">◀</div>
-    <div class="scroll-indicator right">▶</div>
-  </div>
-
-  <!-- 左右分割 -->
-  <div id="mainContent">
-    <!-- 左3分の2 -->
-    <div id="leftColumn">
-      <div id="search-box">
-        <input type="text" id="searchInput" placeholder="キーワードで検索" oninput="applyFilters()" />
-        <select id="sortSelect" onchange="applyFilters()">
-          <option value="relevance">適合度順</option>
-          <option value="dateDesc">新しい順</option>
-          <option value="dateAsc">古い順</option>
-        </select>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>百年前新聞</title>
+    <link rel="icon" href="/icon.png" type="image/png" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#111827" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">1920s - 1940s Archive</p>
+        <h1>百年前新聞</h1>
       </div>
+      <p class="subtitle">百年前の紙面を、現代の読みやすさで。</p>
+      <nav class="top-nav">
+        <button class="top-nav-btn active" data-view="home">ホーム</button>
+        <button class="top-nav-btn" data-view="tags">タグ一覧</button>
+        <button class="top-nav-btn" data-view="gallery">画像ページ</button>
+        <button class="top-nav-btn" data-view="mypage">マイページ</button>
+      </nav>
+    </header>
 
-      <div id="tab-buttons">
-        <button onclick="switchTab('articles')" class="articles-btn">📰 記事</button>
-        <button onclick="switchTab('tags')" class="tags-btn">🏷️ タグ一覧</button>
-        <button onclick="switchTab('thumbnails')" class="thumbnails-btn">🖼️ サムネイル一覧</button>
-      </div>
+    <main class="layout" id="homeView">
+      <section class="main-pane">
+        <form class="controls" onsubmit="return false;">
+          <label class="sr-only" for="searchInput">記事検索</label>
+          <input id="searchInput" type="search" placeholder="キーワード検索（あいまい一致）" />
 
-      <div id="noResults" class="no-results-message hidden">該当する記事がありません。</div>
-      <div id="news" class="tab-content">読み込み中...</div>
-    </div>
+          <label class="sr-only" for="sortSelect">並び替え</label>
+          <select id="sortSelect">
+            <option value="dateDesc">新しい順</option>
+            <option value="dateAsc">古い順</option>
+          </select>
+        </form>
 
-    <!-- 右3分の1 -->
-    <div id="rightColumn">
-      <div id="tag-filter">
-        <span>タグで絞り込み:</span>
-        <div id="tag-actions">
-          <button id="toggle-tags">▼ もっと見る</button>
-          <button id="clear-tags">タグをクリア</button>
+        <div class="genre-strip-wrap">
+          <div id="genreStrip" class="genre-strip" role="tablist" aria-label="ジャンル"></div>
         </div>
-        <div id="tag-buttons"></div>
+
+        <div id="statusLine" class="status-line"></div>
+        <div id="newsList" class="news-list"></div>
+        <div id="sentinel" class="sentinel"></div>
+      </section>
+
+      <aside class="side-pane">
+        <section class="card">
+          <h2>タグで絞り込み</h2>
+          <div class="tag-toolbar">
+            <button id="clearTagsBtn" type="button" class="ghost">クリア</button>
+            <button id="goTagsPageBtn" type="button" class="ghost">すべてのタグを見る</button>
+          </div>
+          <p class="hint">よく使われる上位10件を表示中</p>
+          <div id="selectedTags" class="selected-tags"></div>
+          <div id="tagCloud" class="tag-cloud"></div>
+        </section>
+      </aside>
+    </main>
+
+    <section id="tagsView" class="view hidden">
+      <div class="view-card">
+        <h2>タグ一覧</h2>
+        <p class="hint">タグを押すとホームへ戻って絞り込みます。</p>
+        <div id="allTagsList" class="tag-cloud large"></div>
       </div>
+    </section>
 
-      <h2>🖼️ サムネイル一覧</h2>
-      <div id="thumbnailGallery" class="tab-content"></div>
+    <section id="galleryView" class="view hidden">
+      <div class="view-card">
+        <h2>画像ページ</h2>
+        <p class="hint">スクロールで次の画像へ。画像クリックで拡大できます。</p>
+        <div id="galleryFeed" class="gallery-feed"></div>
+        <div id="gallerySentinel" class="sentinel"></div>
+      </div>
+    </section>
+
+    <section id="mypageView" class="view hidden">
+      <div class="view-card">
+        <h2>マイページ</h2>
+        <p id="favoriteSummary" class="hint"></p>
+        <div id="favoriteList" class="news-list"></div>
+      </div>
+    </section>
+
+    <div id="imageModal" class="image-modal hidden" role="dialog" aria-modal="true">
+      <button id="closeModalBtn" class="modal-close" type="button">閉じる ×</button>
+      <img id="modalImage" src="" alt="拡大画像" />
     </div>
-  </div>
 
-  <!-- 上に戻るボタン -->
-  <button id="scrollToTop">⬆️</button>
+    <template id="articleTemplate">
+      <article class="article-card">
+        <div class="article-meta">
+          <span class="genre-pill"></span>
+          <time class="article-date"></time>
+        </div>
+        <h3 class="article-title"></h3>
+        <button class="favorite-btn" type="button">☆ お気に入り</button>
+        <img class="article-image hidden" alt="記事画像" loading="lazy" />
+        <p class="article-snippet"></p>
+        <div class="article-tags"></div>
+      </article>
+    </template>
 
-  <!-- モーダル -->
-  <div id="imageModal" class="modal hidden">
-    <button id="closeBtn" class="close-btn">&times;</button>
-    <img id="modalImg" src="" loading="lazy" />
-  </div>
-
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
+</html>

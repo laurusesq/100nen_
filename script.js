@@ -1,832 +1,487 @@
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(reg => {
-    console.log('Service Worker registered!', reg);
+const API_URL = 'https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles';
+const CACHE_KEY = 'hyakunen:articles-cache:v1';
+const CACHE_AT_KEY = 'hyakunen:articles-cache-at:v1';
+const FAVORITES_KEY = 'hyakunen:favorites:v1';
+const BATCH_SIZE = 15;
+const GALLERY_BATCH = 8;
 
-    reg.onupdatefound = () => {
-      const newWorker = reg.installing;
-      newWorker.onstatechange = () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          showUpdateNotice();
-        }
-      };
-    };
-  }).catch(err => {
-    console.error('Service Worker registration failed:', err);
+const state = {
+  allArticles: [],
+  filtered: [],
+  renderedCount: 0,
+  galleryArticles: [],
+  galleryRendered: 0,
+  keyword: '',
+  sort: 'dateDesc',
+  genre: 'すべて',
+  selectedTags: new Set(),
+  favorites: new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]')),
+  currentView: 'home',
+};
+
+const els = {
+  homeView: document.getElementById('homeView'),
+  tagsView: document.getElementById('tagsView'),
+  galleryView: document.getElementById('galleryView'),
+  mypageView: document.getElementById('mypageView'),
+  navButtons: [...document.querySelectorAll('.top-nav-btn')],
+  searchInput: document.getElementById('searchInput'),
+  sortSelect: document.getElementById('sortSelect'),
+  genreStrip: document.getElementById('genreStrip'),
+  statusLine: document.getElementById('statusLine'),
+  newsList: document.getElementById('newsList'),
+  tagCloud: document.getElementById('tagCloud'),
+  allTagsList: document.getElementById('allTagsList'),
+  selectedTags: document.getElementById('selectedTags'),
+  clearTagsBtn: document.getElementById('clearTagsBtn'),
+  goTagsPageBtn: document.getElementById('goTagsPageBtn'),
+  sentinel: document.getElementById('sentinel'),
+  galleryFeed: document.getElementById('galleryFeed'),
+  gallerySentinel: document.getElementById('gallerySentinel'),
+  favoriteSummary: document.getElementById('favoriteSummary'),
+  favoriteList: document.getElementById('favoriteList'),
+  articleTemplate: document.getElementById('articleTemplate'),
+  imageModal: document.getElementById('imageModal'),
+  modalImage: document.getElementById('modalImage'),
+  closeModalBtn: document.getElementById('closeModalBtn'),
+};
+
+const wikiIcon = 'https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg';
+
+bootstrap();
+
+async function bootstrap() {
+  bindEvents();
+  readQuery();
+  await loadArticlesFast();
+  buildGenreButtons();
+  buildTagViews();
+  applyFilters(true);
+  setupInfiniteScroll();
+  setupGalleryScroll();
+  renderMypage();
+}
+
+function bindEvents() {
+  els.navButtons.forEach((button) => {
+    button.addEventListener('click', () => switchView(button.dataset.view));
+  });
+
+  els.searchInput.addEventListener('input', () => {
+    state.keyword = els.searchInput.value.trim();
+    applyFilters(true);
+  });
+
+  els.sortSelect.addEventListener('change', () => {
+    state.sort = els.sortSelect.value;
+    applyFilters(true);
+  });
+
+  els.clearTagsBtn.addEventListener('click', () => {
+    state.selectedTags.clear();
+    applyFilters(true);
+  });
+
+  els.goTagsPageBtn.addEventListener('click', () => switchView('tags'));
+
+  els.closeModalBtn.addEventListener('click', closeModal);
+  els.imageModal.addEventListener('click', (event) => {
+    if (event.target === els.imageModal) closeModal();
   });
 }
 
-function showUpdateNotice() {
-  const notice = document.getElementById('updateNotice');
-  if (!notice) return;
+function switchView(view) {
+  state.currentView = view;
+  els.homeView.classList.toggle('hidden', view !== 'home');
+  els.tagsView.classList.toggle('hidden', view !== 'tags');
+  els.galleryView.classList.toggle('hidden', view !== 'gallery');
+  els.mypageView.classList.toggle('hidden', view !== 'mypage');
+  els.navButtons.forEach((button) => button.classList.toggle('active', button.dataset.view === view));
 
-  notice.style.display = 'block';
-  notice.style.opacity = '1';
-
-  // 5秒でフェードアウト（ただしタップされなければ）
-  setTimeout(() => {
-    notice.style.opacity = '0';
-    setTimeout(() => { notice.style.display = 'none'; }, 500);
-  }, 5000);
-
-  // タップで即リロード
-  notice.addEventListener('click', () => {
-    location.reload();
-  });
+  if (view === 'mypage') renderMypage();
+  if (view === 'gallery' && els.galleryFeed.childElementCount === 0) appendGalleryBatch();
 }
 
-const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
-const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
-
-if (isIos && !isInStandaloneMode) {
-  document.getElementById('ios-tip').style.display = 'block';
-}
-
-let allArticles = [];
-let currentImageIndex = 0;
-let currentGenre = 'すべて';
-let visibleImageArticles = [];
-let visibleCount = 0;
-const BATCH_SIZE = 20;
-let thumbnailPage = 0;
-const thumbnailsPerPage = 20;
-let filteredThumbnailArticles = [];
-let isLoading = false;
-
-fetch('https://raspy-sunset-f70a.100nen-data.workers.dev/api/articles')
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('記事データの取得に失敗しました');
+async function loadArticlesFast() {
+  const cached = localStorage.getItem(CACHE_KEY);
+  if (cached) {
+    try {
+      state.allArticles = JSON.parse(cached);
+      const at = localStorage.getItem(CACHE_AT_KEY);
+      els.statusLine.textContent = at ? `キャッシュ表示中（${new Date(Number(at)).toLocaleString('ja-JP')}）` : 'キャッシュ表示中';
+    } catch {
+      localStorage.removeItem(CACHE_KEY);
     }
-    return response.json();
-  })
-  .then(data => {
-    allArticles = data;
+  }
 
-    const filtersDiv = document.getElementById("genres");
-    filtersDiv.innerHTML = "";
+  const res = await fetch(API_URL);
+  if (!res.ok && state.allArticles.length === 0) {
+    els.statusLine.textContent = '記事の読み込みに失敗しました。';
+    throw new Error('fetch failed');
+  }
 
-    // ジャンル件数を数える
-    const genreCounts = data.reduce((acc, article) => {
-      const genre = article["ジャンル"] || "未分類";
-      acc[genre] = (acc[genre] || 0) + 1;
-      return acc;
-    }, {});
+  if (res.ok) {
+    const fresh = await res.json();
+    state.allArticles = fresh;
+    localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
+    localStorage.setItem(CACHE_AT_KEY, String(Date.now()));
+  }
+}
 
-    // 画像あり件数
-    const imageCount = data.filter(article => !!article["画像URL"]).length;
+function buildGenreButtons() {
+  const counts = new Map([['すべて', state.allArticles.length]]);
+  for (const item of state.allArticles) {
+    const genre = item['ジャンル'] || '未分類';
+    counts.set(genre, (counts.get(genre) || 0) + 1);
+  }
 
-    // ソート（件数の多い順）
-    const sortedGenres = Object.entries(genreCounts).sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1]; // 数値で降順
-      return a[0].localeCompare(b[0], 'ja'); // 同点なら五十音順
-    });
-
-    // 「すべて」ボタン
-    const allBtn = document.createElement("button");
-    allBtn.textContent = `すべて (${data.length})`;
-    allBtn.onclick = () => {
-      currentGenre = 'すべて';
-      highlightActiveButton(allBtn);
-      applyFilters();
-    };
-    filtersDiv.appendChild(allBtn);
-    allBtn.onclick();
-    
-    // 「画像あり」ボタン
-    const imageBtn = document.createElement("button");
-    imageBtn.textContent = `画像あり (${imageCount})`;
-    imageBtn.onclick = () => {
-      currentGenre = '画像あり';
-      highlightActiveButton(imageBtn);
-      applyFilters();
-    };
-    filtersDiv.appendChild(imageBtn);
-
-    // その他のジャンルボタン
-    sortedGenres.forEach(([genre, count]) => {
-      const btn = document.createElement("button");
+  els.genreStrip.innerHTML = '';
+  [...counts.entries()]
+    .sort((a, b) => (a[0] === 'すべて' ? -1 : b[0] === 'すべて' ? 1 : b[1] - a[1]))
+    .forEach(([genre, count]) => {
+      const btn = document.createElement('button');
+      btn.className = 'genre-btn';
       btn.textContent = `${genre} (${count})`;
-      btn.onclick = () => {
-        currentGenre = genre;
-        highlightActiveButton(btn);
-        applyFilters();
-      };
-      filtersDiv.appendChild(btn);
+      if (genre === state.genre) btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        state.genre = genre;
+        [...els.genreStrip.children].forEach((x) => x.classList.remove('active'));
+        btn.classList.add('active');
+        applyFilters(true);
+      });
+      els.genreStrip.appendChild(btn);
     });
+}
 
-    const tags = extractUniqueTags(data);
-    renderTagButtons(tags);
+function buildTagViews() {
+  const tagCount = countTags(state.allArticles);
+  const sortedTags = [...tagCount.entries()].sort((a, b) => b[1] - a[1]);
 
-    applyFilters();
-  })
-  .catch(error => {
-    console.error('データ取得エラー:', error);
-    document.getElementById("app").textContent = "記事の読み込みに失敗しました。";
+  renderTagButtons(els.tagCloud, sortedTags.slice(0, 10));
+  renderTagButtons(els.allTagsList, sortedTags);
+}
+
+function renderTagButtons(target, entries) {
+  target.innerHTML = '';
+  entries.forEach(([tag, count]) => {
+    const btn = document.createElement('button');
+    btn.className = 'cloud-chip';
+    btn.type = 'button';
+    btn.textContent = `${tag} (${count})`;
+    btn.addEventListener('click', () => {
+      if (state.selectedTags.has(tag)) state.selectedTags.delete(tag);
+      else state.selectedTags.add(tag);
+      switchView('home');
+      applyFilters(true);
+    });
+    target.appendChild(btn);
   });
+}
 
-function applyFilters() {
-  const container = document.getElementById("news");
-  container.innerHTML = "";
-  visibleCount = 0;
+function applyFilters(reset = false) {
+  let list = [...state.allArticles];
 
-  const keyword = document.getElementById("searchInput").value.toLowerCase();
-  const tagArray = Array.from(selectedTags);
-  let filtered = allArticles;
+  if (state.genre !== 'すべて') list = list.filter((a) => (a['ジャンル'] || '未分類') === state.genre);
 
-  if (currentGenre === '画像あり') {
-    filtered = filtered.filter(article => !!article["画像URL"]);
-  } else if (currentGenre !== 'すべて') {
-    filtered = filtered.filter(article => article["ジャンル"] === currentGenre);
-  }
-
-  if (tagArray.length > 0) {
-    filtered = filtered.filter(article => {
-      const tags = article["タグ"]
-        ? article["タグ"].split(",").map(tag => tag.trim())
-        : [];
-      return tagArray.every(tag => tags.includes(tag));
+  if (state.selectedTags.size > 0) {
+    list = list.filter((a) => {
+      const tags = new Set(parseTags(a['タグ']));
+      return [...state.selectedTags].every((tag) => tags.has(tag));
     });
   }
 
+  const keyword = normalize(state.keyword);
   if (keyword) {
-    filtered = filtered.filter(article =>
-      (article["タイトル"] || "").toLowerCase().includes(keyword) ||
-      (article["本文"] || "").toLowerCase().includes(keyword)
-    );
+    list = list.filter((a) => {
+      const title = normalize(a['タイトル'] || '');
+      const body = normalize(a['本文'] || '');
+      return includesFuzzy(title, keyword) || includesFuzzy(body, keyword);
+    });
   }
 
-  const sortType = document.getElementById("sortSelect")?.value;
-  
-  filtered.sort((a, b) => {
-    switch (sortType) {
-      case "relevance":
-        const getScore = (item) => {
-          let score = 0;
-          if (!keyword) return score;
-          const title = item["タイトル"]?.toLowerCase() || "";
-          const body = item["本文"]?.toLowerCase() || "";
-  
-          // タイトルに含まれていれば +3
-          if (title.includes(keyword)) score += 3;
-          // 本文に含まれていれば +1
-          if (body.includes(keyword)) score += 1;
-  
-          return score;
-        };
-        return getScore(b) - getScore(a); // 高スコア順
-      case "dateAsc":
-        return a["日付"]?.localeCompare(b["日付"]);
-      case "dateDesc":
-        return b["日付"]?.localeCompare(a["日付"]);
-      default:
-        return 0;
-    }
+  list.sort((a, b) => {
+    const dA = normalizeDate(a['日付']);
+    const dB = normalizeDate(b['日付']);
+    return state.sort === 'dateAsc' ? dA.localeCompare(dB) : dB.localeCompare(dA);
   });
 
+  state.filtered = list;
+  state.galleryArticles = list.filter((a) => !!a['画像URL']);
 
-  window.filteredArticles = filtered;
-  const noResultsEl = document.getElementById("noResults");
+  if (reset) {
+    state.renderedCount = 0;
+    els.newsList.innerHTML = '';
+    appendBatch();
 
-  if (filtered.length === 0) {
-    container.innerHTML = "";
-    document.getElementById("thumbnailGallery").innerHTML = "";
-    document.getElementById("scrollSentinel").style.display = "none";
-    if (noResultsEl) noResultsEl.classList.remove("hidden");
+    state.galleryRendered = 0;
+    els.galleryFeed.innerHTML = '';
+    if (state.currentView === 'gallery') appendGalleryBatch();
+  }
+
+  renderSelectedTags();
+  syncTagButtonState();
+  updateStatus();
+  writeQuery();
+}
+
+function appendBatch() {
+  const batch = state.filtered.slice(state.renderedCount, state.renderedCount + BATCH_SIZE);
+  if (batch.length === 0) return;
+
+  const fragment = document.createDocumentFragment();
+  batch.forEach((article) => fragment.appendChild(renderArticleCard(article, false)));
+  els.newsList.appendChild(fragment);
+  state.renderedCount += batch.length;
+}
+
+function appendGalleryBatch() {
+  const batch = state.galleryArticles.slice(state.galleryRendered, state.galleryRendered + GALLERY_BATCH);
+  if (batch.length === 0) return;
+
+  const fragment = document.createDocumentFragment();
+  batch.forEach((article) => {
+    const card = document.createElement('article');
+    card.className = 'gallery-card';
+
+    const image = document.createElement('img');
+    image.className = 'gallery-image';
+    image.src = article['画像URL'];
+    image.alt = article['タイトル'] || '記事画像';
+    image.loading = 'lazy';
+    image.addEventListener('click', () => openModal(image.src, image.alt));
+
+    const title = document.createElement('h3');
+    title.className = 'gallery-title';
+    title.textContent = article['タイトル'] || '無題';
+
+    const body = document.createElement('p');
+    body.className = 'gallery-body';
+    body.textContent = makeSnippet(article['本文'] || '', 220);
+
+    card.append(image, title, body);
+    fragment.appendChild(card);
+  });
+
+  els.galleryFeed.appendChild(fragment);
+  state.galleryRendered += batch.length;
+}
+
+function renderArticleCard(article, isMypage) {
+  const node = els.articleTemplate.content.firstElementChild.cloneNode(true);
+  node.querySelector('.genre-pill').textContent = article['ジャンル'] || '未分類';
+  node.querySelector('.article-date').textContent = article['日付'] || '';
+  node.querySelector('.article-title').textContent = article['タイトル'] || '無題';
+  node.querySelector('.article-snippet').textContent = makeSnippet(article['本文'] || '', 160);
+
+  const favBtn = node.querySelector('.favorite-btn');
+  const articleId = getArticleId(article);
+  const isFav = state.favorites.has(articleId);
+  favBtn.classList.toggle('active', isFav);
+  favBtn.textContent = isFav ? '★ お気に入り中' : '☆ お気に入り';
+  favBtn.addEventListener('click', () => toggleFavorite(article));
+
+  const image = node.querySelector('.article-image');
+  if (article['画像URL']) {
+    image.src = article['画像URL'];
+    image.classList.remove('hidden');
+    image.addEventListener('click', () => openModal(image.src, article['タイトル'] || '記事画像'));
+  }
+
+  const tagBox = node.querySelector('.article-tags');
+  parseTags(article['タグ']).forEach((tag) => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+
+    const text = document.createElement('button');
+    text.className = 'tag-chip';
+    text.type = 'button';
+    text.textContent = `#${tag}`;
+    text.addEventListener('click', () => {
+      state.selectedTags.add(tag);
+      switchView('home');
+      applyFilters(true);
+    });
+
+    const wiki = document.createElement('a');
+    wiki.className = 'wiki-link';
+    wiki.href = `https://ja.wikipedia.org/wiki/${encodeURIComponent(tag)}`;
+    wiki.target = '_blank';
+    wiki.rel = 'noopener noreferrer';
+
+    const img = document.createElement('img');
+    img.src = wikiIcon;
+    img.alt = 'Wikipedia';
+    wiki.appendChild(img);
+
+    chip.append(text, wiki);
+    tagBox.appendChild(chip);
+  });
+
+  if (isMypage) {
+    const remove = document.createElement('button');
+    remove.className = 'ghost';
+    remove.type = 'button';
+    remove.textContent = 'お気に入りから外す';
+    remove.addEventListener('click', () => toggleFavorite(article));
+    node.appendChild(remove);
+  }
+
+  return node;
+}
+
+function renderMypage() {
+  const favorites = state.allArticles.filter((article) => state.favorites.has(getArticleId(article)));
+  els.favoriteSummary.textContent = `お気に入り ${favorites.length} 件（ブラウザ保存）`;
+  els.favoriteList.innerHTML = '';
+
+  if (favorites.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'hint';
+    empty.textContent = 'まだお気に入りはありません。';
+    els.favoriteList.appendChild(empty);
     return;
-  } else {
-    if (noResultsEl) noResultsEl.classList.add("hidden");
-    document.getElementById("scrollSentinel").style.display = "";
   }
 
-  // サムネイル更新
-  const gallery = document.getElementById("thumbnailGallery");
-  gallery.innerHTML = "";
-  filteredThumbnailArticles = filtered.filter(article => !!article["画像URL"]);
-  thumbnailPage = 0;
-  renderThumbnailPage();
-  visibleImageArticles = filteredThumbnailArticles;
-
-  visibleCount = 0;
-  loadMore(); // 最初の分だけ表示
-
-  function fillViewportIfNeeded() {
-    const sentinel = document.getElementById("scrollSentinel");
-    const containerHeight = container.offsetHeight;
-    const windowHeight = window.innerHeight;
-
-    // 記事が画面に満たないか、sentinel がまだ下にあるときは続ける
-    if (
-      visibleCount < window.filteredArticles.length &&
-      containerHeight < windowHeight + 100 &&
-      !isLoading
-    ) {
-      loadMore();
-      setTimeout(fillViewportIfNeeded, 50);
-    }
-  }
-
-  setTimeout(fillViewportIfNeeded, 100); // 初期レンダリング後に開始
-
-  checkInitialScrollability();
-  setupScrollSentinel();
+  const fragment = document.createDocumentFragment();
+  favorites.forEach((article) => fragment.appendChild(renderArticleCard(article, true)));
+  els.favoriteList.appendChild(fragment);
 }
 
-async function loadMore() {
-  if (!window.filteredArticles || !Array.isArray(window.filteredArticles)) return;
-  if (isLoading) return;
-  isLoading = true;
+function toggleFavorite(article) {
+  const id = getArticleId(article);
+  if (state.favorites.has(id)) state.favorites.delete(id);
+  else state.favorites.add(id);
 
-  const container = document.getElementById("news");
-  const end = visibleCount + BATCH_SIZE;
-  const nextBatch = window.filteredArticles.slice(visibleCount, end);
-
-  for (const article of nextBatch) {
-    const rawTags = (article["タグ"] || "")
-      .split(",")
-      .map(tag => tag.trim())
-      .filter(tag => tag);
-
-    const tags = await buildTagHTML(rawTags);
-
-    const bodyHtml = (article["本文"] || "")
-      .split(/\n+/)
-      .map(paragraph => `<p>&emsp;${paragraph.trim()}</p>`)
-      .join("");
-    
-    container.innerHTML += `
-      <div class="article">
-        <div class="genre">${article["ジャンル"]}</div>
-        <div class="title">${article["タイトル"]}</div>
-        <div class="date">${article["日付"]}</div>
-        ${article["画像URL"] ? `<img src="${article["画像URL"]}" loading="lazy" class="article-image" onclick="openModal('${article["画像URL"]}')">` : ""}
-        <div class="article-body">${bodyHtml}</div>
-        <div class="tags">${tags}</div>
-      </div>
-    `;
-  }
-
-  // タグクリックで絞り込み
-  const clickableTags = container.querySelectorAll(".clickable-tag"); 
-  clickableTags.forEach(tagEl => {
-    tagEl.addEventListener("click", event => {
-      if (event.target.closest(".wikipedia-icon")) {
-        return; // Wikipediaアイコンのクリックだったら何もしない
-      }
-  
-      const tag = tagEl.getAttribute("data-tag");
-  
-      // 単一選択モード
-      selectedTags.clear();
-      selectedTags.add(tag);
-  
-      // タグ一覧にも反映
-      updateTagButtonStates();
-  
-      // フィルター反映
-      applyFilters();
-    });
-  });
-
-  visibleCount += nextBatch.length;
-
-  setTimeout(() => {
-    isLoading = false;
-    checkInitialScrollability(); // ← 再度チェック（記事が画面に足りないとき用）
-  }, 300);
-
-  await addWikipediaIcons();
-
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify([...state.favorites]));
+  applyFilters(true);
+  renderMypage();
 }
 
-function setupScrollSentinel() {
-  let sentinel = document.getElementById("scrollSentinel");
-  if (!sentinel) {
-    sentinel = document.createElement("div");
-    sentinel.id = "scrollSentinel";
-    document.body.appendChild(sentinel);
-  }
-
-  if (window._observer) {
-    window._observer.disconnect();
-  }
-
-  const observer = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) {
-      loadMore();
-    }
-  }, {
-    rootMargin: "200px",
-  });
-
-  observer.observe(sentinel);
-  window._observer = observer;
-}
-
-function isElementInViewport(el) {
-  const rect = el.getBoundingClientRect();
-  return (
-    rect.top < window.innerHeight &&
-    rect.bottom >= 0
-  );
-}
-
-function setupIntersectionObserver() {
-  const sentinel = document.getElementById("scrollSentinel");
-  if (!sentinel) return;
-
-  // すでに observer があるなら切る
-  if (window._observer) {
-    window._observer.disconnect();
-  }
-
+function setupInfiniteScroll() {
   const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      loadMore();
+    if (entries.some((entry) => entry.isIntersecting) && state.currentView === 'home') {
+      appendBatch();
+      updateStatus();
     }
-  }, {
-    rootMargin: "400px",
-  });
-
-  observer.observe(sentinel);
-  window._observer = observer;
+  }, { rootMargin: '280px 0px' });
+  observer.observe(els.sentinel);
 }
 
-// ページの高さが画面に満たないときに繰り返し読み込む
-function checkInitialScrollability() {
-  const documentHeight = document.body.offsetHeight;
-  const windowHeight = window.innerHeight;
-
-  if (documentHeight <= windowHeight + 100 && !isLoading) {
-    loadMore();
-    setTimeout(checkInitialScrollability, 300);
-  }
-}
-
-// 画面スクロール時に最下部近くで読み込み（補助的）
-function maybeLoadMoreArticles() {
-  if (isLoading) return;
-
-  const scrollBottom = window.innerHeight + window.scrollY;
-  const documentHeight = document.body.offsetHeight;
-
-  if (scrollBottom + 300 >= documentHeight) {
-    loadMore();
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  setupScrollSentinel();
-});
-
-window.addEventListener("scroll", maybeLoadMoreArticles);
-
-document.addEventListener("DOMContentLoaded", () => {
-  const sentinel = document.createElement("div");
-  sentinel.id = "scrollSentinel";
-  document.body.appendChild(sentinel);
-  setupIntersectionObserver();
-  checkInitialScrollability(); // ← 初期表示が少ない時に対応
-});
-
-const genres = document.getElementById("genres");
-const leftArrow = document.querySelector(".scroll-indicator.left");
-const rightArrow = document.querySelector(".scroll-indicator.right");
-
-function updateArrowVisibility() {
-  const maxScroll = genres.scrollWidth - genres.clientWidth;
-  leftArrow.style.display = genres.scrollLeft > 0 ? "block" : "none";
-  rightArrow.style.display = genres.scrollLeft < maxScroll - 1 ? "block" : "none";
-}
-
-leftArrow.onclick = () => {
-  genres.scrollBy({ left: -150, behavior: "smooth" });
-};
-rightArrow.onclick = () => {
-  genres.scrollBy({ left: 150, behavior: "smooth" });
-};
-
-genres.addEventListener("scroll", updateArrowVisibility);
-window.addEventListener("resize", updateArrowVisibility);
-window.addEventListener("load", updateArrowVisibility);
-
-// 左クリックドラッグによるスクロール（PCサポート）
-let isDragging = false, startX, scrollLeft;
-genres.addEventListener("mousedown", (e) => {
-  isDragging = true;
-  startX = e.pageX - genres.offsetLeft;
-  scrollLeft = genres.scrollLeft;
-});
-document.addEventListener("mouseup", () => isDragging = false);
-genres.addEventListener("mouseleave", () => isDragging = false);
-genres.addEventListener("mousemove", (e) => {
-  if (!isDragging) return;
-  e.preventDefault();
-  const x = e.pageX - genres.offsetLeft;
-  const walk = (x - startX) * 1.5; // スクロール速度調整
-  genres.scrollLeft = scrollLeft - walk;
-});
-
-function renderThumbnailPage() {
-  const gallery = document.getElementById("thumbnailGallery");
-  const start = thumbnailPage * thumbnailsPerPage;
-  const end = start + thumbnailsPerPage;
-  const slice = filteredThumbnailArticles.slice(start, end);
-
-  slice.forEach(article => {
-    const img = document.createElement("img");
-    img.src = article["画像URL"];
-    img.className = "thumbnail";
-    img.loading = "lazy";
-    img.onclick = () => openModal(article["画像URL"]);
-    gallery.appendChild(img);
-  });
-
-  thumbnailPage++;
-}
-
-function setGenre(genre) {
-  currentGenre = genre;
-  applyFilters();
-}
-
-function highlightActiveButton(activeBtn) {
-  const buttons = document.querySelectorAll("#genres button");
-  buttons.forEach(btn => btn.classList.remove("active"));
-  activeBtn.classList.add("active");
-}
-
-// 記事データ（getArticles()で取得済み）を使ってタグ一覧を作る
-function extractUniqueTags(articles) {
-  const tagCounts = {};
-
-  articles.forEach(article => {
-    if (!article["タグ"]) return;
-    const tags = article["タグ"]
-      .split(",")
-      .map(tag => tag.trim())
-      .filter(tag => tag !== "");
-
-    tags.forEach(tag => {
-      tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-    });
-  });
-
-  // 件数の多い順 → 同じなら五十音順（日本語対応）でソート
-  return Object.entries(tagCounts).sort((a, b) => {
-    if (b[1] !== a[1]) return b[1] - a[1];
-    return a[0].localeCompare(b[0], 'ja');
-  });
-}
-
-const selectedTags = new Set();
-
-function renderTagButtons(tagsWithCounts, showAll = false) {
-  const container = document.getElementById("tag-buttons");
-  const toggleBtn = document.getElementById("toggle-tags");
-  const clearBtn = document.getElementById("clear-tags");
-
-  container.innerHTML = "";
-
-  const MAX_VISIBLE = 20;
-  const tagsToRender = showAll ? tagsWithCounts : tagsWithCounts.slice(0, MAX_VISIBLE);
-
-  tagsToRender.forEach(([tag, count]) => {
-    const btn = document.createElement("button");
-    btn.textContent = `#${tag} (${count})`;
-    btn.classList.add("tag-button");
-    btn.setAttribute("data-tag", tag);
-
-    if (selectedTags.has(tag)) {
-      btn.classList.add("active");
+function setupGalleryScroll() {
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting) && state.currentView === 'gallery') {
+      appendGalleryBatch();
     }
-
-    btn.addEventListener("click", () => {
-      if (selectedTags.has(tag)) {
-        selectedTags.delete(tag);
-        btn.classList.remove("active");
-      } else {
-        selectedTags.add(tag);
-        btn.classList.add("active");
-      }
-      applyFilters();
-    });
-
-    container.appendChild(btn);
-  });
-
-  // イベントリスナーの更新
-  toggleBtn.innerHTML = showAll ? "▲ 折りたたむ" : "▼ もっと見る";
-  toggleBtn.onclick = () => renderTagButtons(tagsWithCounts, !showAll);
-
-  clearBtn.onclick = () => {
-    selectedTags.clear();
-    document.querySelectorAll(".tag-button").forEach(btn => btn.classList.remove("active"));
-    applyFilters();
-  };
+  }, { rootMargin: '360px 0px' });
+  observer.observe(els.gallerySentinel);
 }
 
-const WIKIPEDIA_CACHE_KEY = "wikipediaExistenceCache";
-const WIKIPEDIA_CACHE_EXPIRY_DAYS = 30;
-
-function getWikipediaCache() {
-  const raw = localStorage.getItem(WIKIPEDIA_CACHE_KEY);
-  return raw ? JSON.parse(raw) : {};
-}
-
-function saveWikipediaCache(cache) {
-  localStorage.setItem(WIKIPEDIA_CACHE_KEY, JSON.stringify(cache));
-}
-
-function getRandomExpiryDate() {
-  const days = WIKIPEDIA_CACHE_EXPIRY_DAYS * (1 + Math.random()); // 30〜60日
-  const expiry = new Date();
-  expiry.setDate(expiry.getDate() + days);
-  return expiry;
-}
-
-function isCacheExpired(expiryDate) {
-  return new Date() > new Date(expiryDate);
-}
-
-async function checkWikipediaExistence(title) {
-  const cache = getWikipediaCache();
-  if (
-    cache[title] &&
-    !isCacheExpired(cache[title].expiry) &&
-    typeof cache[title].redirectTo !== "undefined"
-  ) {
-    return cache[title]; // { exists, redirectTo }
-  }
-
-  try {
-    const apiUrl = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&titles=${encodeURIComponent(title)}&redirects=1&format=json`;
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-
-    const pages = data.query.pages;
-    const page = Object.values(pages)[0];
-    const exists = page.pageid !== undefined;
-    const redirectTo = page.title;
-
-    // 保存
-    cache[title] = {
-      exists,
-      redirectTo,
-      expiry: getRandomExpiryDate().toISOString()
-    };
-    saveWikipediaCache(cache);
-
-    return cache[title];
-
-  } catch (e) {
-    console.error("Wikipediaチェック失敗:", title, e);
-    return { exists: false, redirectTo: title };
-  }
-}
-
-function buildTagHTML(tags) {
-  const cache = getWikipediaCache();
-  const uniqueTags = [...new Set(tags)];
-
-  return uniqueTags.map(tag => {
-    const cached = cache[tag];
-    const isValid = cached && !isCacheExpired(cached.expiry);
-    const exists = isValid ? cached.exists : null;
-    const redirectTo = isValid ? cached.redirectTo : null;
-
-    const wikipediaIcon = exists
-      ? generateWikipediaIcon(tag, redirectTo)
-      : `<span class="wikipedia-placeholder"></span>`;
-
-    return `<span class="clickable-tag" data-tag="${tag}" data-wikipediatag="${tag}">
-              #${tag}${wikipediaIcon}
-            </span>`;
-  }).join("");
-}
-
-function addWikipediaIcons() {
-  const observer = new IntersectionObserver(async (entries, obs) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        const span = entry.target.querySelector(".wikipedia-placeholder");
-        if (!span) {
-          obs.unobserve(entry.target);
-          continue;
-        }
-
-        const tag = entry.target.getAttribute("data-wikipediatag");
-        const result = await checkWikipediaExistence(tag);
-        if (result.exists) {
-          span.outerHTML = generateWikipediaIcon(tag, result.redirectTo);
-        } else {
-          span.remove();
-        }
-        obs.unobserve(entry.target); // 一度処理したら監視解除
-      }
-    }
-  }, {
-    rootMargin: "200px", // 画面に入る前に処理する余裕を持つ
-    threshold: 0.1
-  });
-
-  document.querySelectorAll(".clickable-tag[data-wikipediatag]").forEach(el => {
-    observer.observe(el);
-  });
-}
-
-function generateWikipediaIcon(tag, actualTitle) {
-  const finalTitle = actualTitle || tag;
-  const url = `https://ja.wikipedia.org/wiki/${encodeURIComponent(finalTitle)}`;
-  return `
-    <a href="${url}" target="_blank" rel="noopener noreferrer" class="wikipedia-icon" title="Wikipediaで「${tag}」を検索">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Wikipedia%27s_W.svg" alt="Wikipedia" />
-    </a>`;
-}
-
-function updateTagButtonStates() {
-  document.querySelectorAll(".tag-button").forEach(btn => {
-    const btnTag = btn.getAttribute("data-tag");
-    if (selectedTags.has(btnTag)) {
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
-  });
-}
-
-function openModal(imageUrl) {
-  currentImageIndex = visibleImageArticles.findIndex(a => a["画像URL"] === imageUrl);
-  showImage(currentImageIndex);
-  const modal = document.getElementById("imageModal");
-  modal.classList.remove("hidden");
-  setTimeout(() => {
-    modal.classList.add("show");
-  }, 10);
-}
-
-function showImage(index) {
-  if (index < 0 || index >= visibleImageArticles.length) return;
-
-  currentImageIndex = index;
-  const article = visibleImageArticles[index];
-  const modalImg = document.getElementById("modalImg");
-  modalImg.src = article["画像URL"];
-}
-
-function nextImage() {
-  showImage(currentImageIndex + 1);
-}
-
-function prevImage() {
-  showImage(currentImageIndex - 1);
+function openModal(src, alt) {
+  els.modalImage.src = src;
+  els.modalImage.alt = alt;
+  els.imageModal.classList.remove('hidden');
 }
 
 function closeModal() {
-  const modal = document.getElementById("imageModal");
-  modal.classList.remove("show");
-  setTimeout(() => {
-    modal.classList.add("hidden");
-  }, 300);
+  els.imageModal.classList.add('hidden');
+  els.modalImage.src = '';
 }
 
-function switchTab(tab) {
-  const main = document.getElementById("mainContent");
-  const tabButtons = document.querySelectorAll("#tab-buttons button");
-
-  // タブボタンのアクティブ状態を切り替え
-  tabButtons.forEach(btn => btn.classList.remove("active"));
-  const currentButton = Array.from(tabButtons).find(btn =>
-    btn.textContent.includes(tab === "articles" ? "記事" :
-                             tab === "tags" ? "タグ" : "サムネイル")
-  );
-  if (currentButton) currentButton.classList.add("active");
-
-  // mainContent に付いている active-xxx クラスを全部外す
-  main.classList.remove("active-articles", "active-tags", "active-thumbnails");
-
-  // 該当のクラスだけ追加
-  if (tab === "articles") {
-    main.classList.add("active-articles");
-  } else if (tab === "tags") {
-    main.classList.add("active-tags");
-  } else if (tab === "thumbnails") {
-    main.classList.add("active-thumbnails");
-  }
+function renderSelectedTags() {
+  els.selectedTags.innerHTML = '';
+  [...state.selectedTags].sort((a, b) => a.localeCompare(b, 'ja')).forEach((tag) => {
+    const button = document.createElement('button');
+    button.className = 'selected-chip';
+    button.type = 'button';
+    button.textContent = `#${tag} ×`;
+    button.addEventListener('click', () => {
+      state.selectedTags.delete(tag);
+      applyFilters(true);
+    });
+    els.selectedTags.appendChild(button);
+  });
 }
 
-window.onresize = function () {
-  const main = document.getElementById("mainContent");
-
-  if (window.innerWidth >= 800) {
-    // PC表示に戻ったらスマホ用のタブ状態をリセット
-    main.classList.remove("active-articles", "active-tags", "active-thumbnails");
-  } else {
-    // スマホ表示になったとき、アクティブタブがなければデフォルトで articles を選択
-    if (
-      !main.classList.contains("active-articles") &&
-      !main.classList.contains("active-tags") &&
-      !main.classList.contains("active-thumbnails")
-    ) {
-      main.classList.add("active-articles");
-      switchTab("articles");
-    } else if (main.classList.contains("active-articles")) {
-      switchTab("articles");
-    } else if (main.classList.contains("active-tags")) {
-      switchTab("tags");
-    } else if (main.classList.contains("active-thumbnails")) {
-      switchTab("thumbnails");
-    }
-  }
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-  if (window.innerWidth < 800) {
-    switchTab("articles");
-  } else {
-    document.getElementById("news").classList.add("active");
-    document.getElementById("thumbnailGallery").classList.add("active");
-  }
-});
-
-const observer = new IntersectionObserver(entries => {
-  if (entries[0].isIntersecting) {
-    loadMore();
-  }
-}, {
-  rootMargin: "200px",
-});
-
-window.addEventListener("scroll", () => {
-  const scrollBottom = window.innerHeight + window.scrollY;
-  const documentHeight = document.body.offsetHeight;
-
-  if (scrollBottom + 300 >= documentHeight) {
-    if (thumbnailPage * thumbnailsPerPage < filteredThumbnailArticles.length) {
-      renderThumbnailPage();
-    }
-  }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  const sentinel = document.createElement("div");
-  sentinel.id = "scrollSentinel";
-  document.body.appendChild(sentinel);
-  observer.observe(sentinel);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  // sentinel（IntersectionObserver用）を追加
-  const sentinel = document.createElement("div");
-  sentinel.id = "scrollSentinel";
-  document.body.appendChild(sentinel);
-
-  // モーダルの初期化
-  const modal = document.getElementById("imageModal");
-  const modalImg = document.getElementById("modalImg");
-  const closeBtn = document.getElementById("closeBtn");
-
-  closeBtn.addEventListener("click", function (e) {
-    e.stopPropagation();
-    closeModal();
+function syncTagButtonState() {
+  const all = [...els.tagCloud.children, ...els.allTagsList.children];
+  all.forEach((button) => {
+    const tag = button.textContent.replace(/\s*\(\d+\)$/, '');
+    button.classList.toggle('active', state.selectedTags.has(tag));
   });
+}
 
-  modal.addEventListener("click", function (e) {
-    if (e.target === modal) {
-      closeModal();
-    } else if (e.target === modalImg) {
-      const midpoint = window.innerWidth / 2;
-      if (e.clientX < midpoint) {
-        prevImage();
-      } else {
-        nextImage();
-      }
-    }
+function updateStatus() {
+  const total = state.filtered.length;
+  const shown = Math.min(state.renderedCount, total);
+  els.statusLine.textContent = `${shown} / ${total} 件を表示中`;
+}
+
+function parseTags(raw) {
+  return (raw || '').split(',').map((v) => v.trim()).filter(Boolean);
+}
+
+function countTags(articles) {
+  const map = new Map();
+  articles.forEach((article) => {
+    parseTags(article['タグ']).forEach((tag) => map.set(tag, (map.get(tag) || 0) + 1));
   });
-});
+  return map;
+}
 
-document.addEventListener("keydown", function(e) {
-  const modal = document.getElementById("imageModal");
-  if (!modal.classList.contains("show")) return;
+function getArticleId(article) {
+  return `${article['日付'] || ''}-${article['タイトル'] || ''}`;
+}
 
-  if (e.key === "ArrowRight") {
-    nextImage();
-  } else if (e.key === "ArrowLeft") {
-    prevImage();
-  } else if (e.key === "Escape") {
-    closeModal();
+function makeSnippet(body, length) {
+  const plain = body.replace(/\s+/g, ' ').trim();
+  return plain.length > length ? `${plain.slice(0, length)}…` : plain;
+}
+
+function normalize(text) {
+  return (text || '').toLowerCase().normalize('NFKC').trim();
+}
+
+function normalizeDate(value) {
+  return (value || '').replaceAll('-', '').replaceAll('/', '');
+}
+
+function includesFuzzy(text, keyword) {
+  if (text.includes(keyword)) return true;
+  if (keyword.length <= 2) return false;
+
+  const chars = [...keyword];
+  let index = 0;
+  for (const char of text) {
+    if (char === chars[index]) index += 1;
+    if (index >= chars.length) return true;
   }
-});
+  return false;
+}
 
-// 表示制御
-window.addEventListener("scroll", () => {
-  const btn = document.getElementById("scrollToTop");
-  btn.style.display = window.scrollY > 300 ? "block" : "none";
-});
+function writeQuery() {
+  const params = new URLSearchParams();
+  if (state.keyword) params.set('q', state.keyword);
+  if (state.sort !== 'dateDesc') params.set('sort', state.sort);
+  if (state.genre !== 'すべて') params.set('genre', state.genre);
+  if (state.selectedTags.size > 0) params.set('tags', [...state.selectedTags].join(','));
+  if (state.currentView !== 'home') params.set('view', state.currentView);
+  history.replaceState(null, '', params.toString() ? `?${params.toString()}` : location.pathname);
+}
 
-// スクロール挙動
-document.getElementById("scrollToTop").addEventListener("click", () => {
-  window.scrollTo({top: 0, behavior: 'smooth'});
-});
+function readQuery() {
+  const params = new URLSearchParams(location.search);
+  state.keyword = params.get('q') || '';
+  state.sort = params.get('sort') || 'dateDesc';
+  state.genre = params.get('genre') || 'すべて';
+  const tags = (params.get('tags') || '').split(',').map((v) => v.trim()).filter(Boolean);
+  tags.forEach((tag) => state.selectedTags.add(tag));
 
+  const view = params.get('view');
+  if (view && ['home', 'tags', 'gallery', 'mypage'].includes(view)) {
+    state.currentView = view;
+  }
 
-
+  els.searchInput.value = state.keyword;
+  els.sortSelect.value = state.sort;
+  switchView(state.currentView);
+}
